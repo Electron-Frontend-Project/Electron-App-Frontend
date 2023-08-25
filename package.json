@@ -1,0 +1,15 @@
+{
+  "name": "inversense_project",
+  "productName": "Inversense Project",
+  "version": "1.0.0",
+  "description": "app for Inversense project",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Helin Varoğlu",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^25.3.2"
+  }
+}
