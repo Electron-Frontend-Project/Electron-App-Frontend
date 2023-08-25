@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/renderer.js" defer></script>
+
+    <title>Inversense</title>
+
+  </head>
+  <body>
+    <nav class="sidebar">
+      <ul>
+        <li>
+          <div class="sidebar-item" id="pre-process">
+            <p class="title">Pre-Processing</p>
+            <ul>
+              <li>
+                <button type="button">Material Properties</button>
+              </li>
+              <li>
+                <button type="button">Boundary Conditions</button>
+              </li>
+            </ul>
+          </div>
+          <div class="sidebar-item" id="opti-method">
+            <p class="title">Optimization Method</p>
+            <ul>
+              <li>
+                <button type="button">BESO</button>
+              </li>
+              <li>
+                <button type="button">PROP</button>
+              </li>
+              <li>
+                <button type="button">OC</button>
+              </li>
+            </ul>
+          </div>
+          <div class="sidebar-item" id="opti-parameters">
+            <p class="title">Optimization Parameters</p>
+            <ul>
+              <li>
+                <label for="rmin-label" style="font-size: 14px;">R<sub>min</sub></label>
+                <input type="text" style="width: 40px;" name="rmin-label"></input>
+              </li>
+              <li>
+                <label for="volfrac-label" style="font-size: 14px;">Volume Fraction</label>
+                <input type="text" name="volfrac-label" style="width: 40px;"></input></p>
+              </li>
+            </ul>
+          </div>
+          <div class="sidebar-item" id="manu-cons">
+            <p class="title">Additive Manufacturing Constraints</p>
+            <ul>
+              <li>
+                <label for="minsize-label" style="font-size: 14px;">Minimum Feature Size</label>
+                <input type="text" name="minsize-label" style="width: 40px;"></input>
+              </li>
+              <li>
+                <label for="overhang-label" style="font-size: 14px;">Overhang Angle</label>
+                <input type="text" name="overhang-label" style="width:30px;"></input></p>
+              </li>
+              <li>
+                <button input="button">Residual Stress Spots</button>
+              </li>
+            </ul>
+          </div>
+          <div class="sidebar-item" id="button-group">
+            <ul>
+              <li>
+                <button input="button" class="play-button"></button> 
+              </li>
+              <li>
+                <button input="button" class="pause-button"></button>
+              </li>
+              <li>
+                <button input="button" class="stop-button"></button>
+              </li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="main-part">
+      <div class="design-part">
+        <span class="design-text" style="margin-left: 10px; color: #7d7d7d;">Design Domain</span>
+      </div>
+
+      <div class="topology-part">
+        <span class="topology-text" style="margin-left: 10px; color: #7d7d7d;">Optimum Topology</span>
+      </div>
+    </div>
+
+    <div class="bottom-part">
+      <div class="info-line">
+        <span p class="info-text">Information Line: There will be written all of the operations made in the program.</span>
+      </div>
+
+      <div class="command-line">
+        <span p class="command-text">Command: <input type=input placeholder="This command line will be here utilize available commands directly with a line." id="command"></span>
+      </div>
+
+      <div class="unit-line">
+        <span p class="unit-text"><span p class="total-node">Total Node: 200000</span>    |    <span p class="total-node">Unit: mm</span>    |    <span p class="current-it-num">Current Iteration Number: 100</span></span>
+      </div>
+    </div>
+
+  </body>
+</html>
