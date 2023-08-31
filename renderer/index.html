@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="css/style.css" />
-    <script src="js/renderer.js" defer></script>
+    <script src="js/renderer.js"></script>
 
     <title>Inversense</title>
 
@@ -49,11 +49,15 @@
             <ul>
               <li>
                 <label for="rmin-label" style="font-size: 14px;">R<sub>min</sub></label>
-                <input type="text" style="width: 40px;" name="rmin-label"></input>
+                <input type="number" style="width: 40px;" id="rminInput" name="rmin-label"></input>
               </li>
               <li>
                 <label for="volfrac-label" style="font-size: 14px;">Volume Fraction</label>
                 <input type="text" name="volfrac-label" style="width: 40px;"></input></p>
+              </li>
+              <li>
+                <button id="fetchButton" >Submit</button>
+                <div id="dataDisplay"></div>
               </li>
             </ul>
           </div>
