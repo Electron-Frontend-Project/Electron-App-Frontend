@@ -9,7 +9,7 @@
   },
   "author": "Helin Varoğlu",
   "license": "MIT",
-  "dependencies": {
-    "electron": "^25.3.2"
+  "devDependencies": {
+    "electron": "^26.2.0"
   }
 }

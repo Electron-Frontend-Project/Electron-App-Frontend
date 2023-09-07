@@ -24,8 +24,8 @@ body {
   height: 100vh;
   background: var(--body-color);
   display: flex;
-  overflow-y: auto;
-  overflow-x: auto;
+  /* overflow-y: auto;
+  overflow-x: auto; */
 }
 
 /* Sidebar Properties */
@@ -39,12 +39,12 @@ body {
 /* Sidebar */
 
 .sidebar {
-  position: fixed;
+  /* position: fixed;
   top: 0;
-  left: 0;
-  height: 100px;
+  left: 0; */
+  height: 120px;
   width: 100%;
-  padding: 3px 3px;
+  padding: 10px 3px 3px;
   display: flex;
   flex-wrap: nowrap;
   white-space: nowrap;
@@ -53,6 +53,7 @@ body {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   border: 2px solid var(--primary-color-dark);
+  overflow-x: auto;
 }
 
 .sidebar ul {
@@ -62,17 +63,17 @@ body {
 }
 
 .sidebar ul li {
-  position: sticky;
+  /* position: sticky;
   right: 0;
-  left: 0;
+  left: 0; */
   display: flex;
-  max-height: 100px;
+  max-height: 90px;
   width: 100%;
 }
 
 .sidebar .sidebar-item {
-  position: relative;
-  top: 0;
+  /* position: relative;
+  top: 0; */
   /* left: 0;
   right: 0; */
   height: 90px;
@@ -93,6 +94,30 @@ body {
   border: 1px solid var(--primary-color-dark);
 }
 
+#opti-method {
+  width: 15%;
+  min-width: 200px;
+}
+
+#opti-parameters {
+  width: 18%;
+  min-width: 250px;
+}
+
+#preprocessing {
+  width: 20%;
+  min-width: 250px;
+}
+
+#manu-cons {
+  width: 32%;
+  min-width: 500px;
+}
+
+#button-group {
+  width: 15%;
+  min-width: 200px;
+}
 
 .sidebar-item button,
 .sidebar-item input {
@@ -184,8 +209,8 @@ body {
   top: 0;
   left: 0;
   width: 50%;
-  height: calc(100% - 200px);
-  margin-top: 100px;
+  height: calc(100% - 220px);
+  margin-top: 120px;
   margin-bottom: 100px;
   border: 1px solid var(--primary-color-dark);
 }
@@ -195,8 +220,8 @@ body {
   top: 0;
   right: 0;
   width: 50%;
-  height: calc(100% - 200px);
-  margin-top: 100px;
+  height: calc(100% - 220px);
+  margin-top: 120px;
   margin-bottom: 100px;
   border: 1px solid var(--primary-color-dark);
 }
