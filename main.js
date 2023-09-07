@@ -13,7 +13,7 @@ let mainWindow;
 
 function createMainWindow() {
     const mainWindow = new BrowserWindow({      //creating main window
-        title: 'Inversense',
+        title: 'PDTO',
         width: 1200,
         height: 800,
         minWidth: 900,
@@ -23,8 +23,9 @@ function createMainWindow() {
             contextIsolation: false,
             enableRemoteModule: true,
           }, 
+          
     });
-
+   
     // Open Dev Tools if in dev env.
     if (isDev) {
         mainWindow.webContents.openDevTools();
@@ -41,7 +42,7 @@ function createMainWindow() {
     let responseData = {}; // Initialize responseData with an empty object
  
     ipcMain.on('fetch-data', async (event, data) => {
-        const { rmin } = data;
+        const { rmin, dx, volfrac, maxfam, emod, pe, length, width, thick, ndivx, ndivy, ndivz } = data;
    
         // Update responseData with the new input values
         responseData = data;
@@ -123,7 +124,6 @@ app.whenReady().then(() => {     //when the app is ready, creates the main func
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createMainWindow();
-
         }
     });    
 });
