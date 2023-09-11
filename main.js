@@ -67,7 +67,7 @@ function createMainWindow() {
     let responseData = {}; // Initialize responseData with an empty object
  
     ipcMain.on('fetch-data', async (event, data) => {
-        const { rmin, dx, volfrac, maxfam, emod, pe, length, width, thick, ndivx, ndivy, ndivz } = data;   
+        const { rmin, dx, volfrac, length, width, thick, ndivx, ndivy, ndivz } = data;   
         // Update responseData with the new input values
         responseData = data;
     

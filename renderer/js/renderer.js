@@ -1,29 +1,31 @@
 const { ipcRenderer } = require('electron');
 
-
 document.addEventListener('DOMContentLoaded', () => {
     const fetchButton = document.getElementById('fetchButton');
     const rminInput = document.getElementById('rminInput');
     const volfracInput = document.getElementById('volFracInput');
+    const dxInput = document.getElementById('dxInput');
+    const lengthInput = document.getElementById('lengthInput');
+    const widthInput = document.getElementById('widthInput');
+    const thickInput = document.getElementById('thickInput');
      
-
     fetchButton.addEventListener('click', async () => {
         const rmin = parseFloat(rminInput.value);
-        const dx = 1e-3;
+        const dx = parseFloat(dxInput.value);
         const volfrac = parseFloat(volfracInput.value);
-        const maxfam = 200;
-        const emod = 200e9;
-        const pe = 3;
-        const length = 1.2;
-        const width = 0.6;
-        const thick = 0.6;
-        const ndivx = 20;
-        const ndivy = 10;
-        const ndivz = 10;
+       // const maxfam = 200;   
+       // const emod = 200e9;  
+       // const pe = 3;        
+        const length = parseFloat(lengthInput.value);
+        const width = parseFloat(widthInput.value);
+        const thick = parseFloat(thickInput.value);
+        const ndivx = length/dx;
+        const ndivy = width/dx;
+        const ndivz = thick/dx;
         console.log('Rmin Value:', rmin);
 
         // Send all parameters to the main process using IPC
-    ipcRenderer.send('fetch-data', { rmin, dx, volfrac, maxfam, emod, pe, length, width, thick, ndivx, ndivy, ndivz});
+        ipcRenderer.send('fetch-data', { rmin, dx, volfrac, length, width, thick, ndivx, ndivy, ndivz});
     });
 });
 
