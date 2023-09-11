@@ -4,7 +4,14 @@ const axios = require('axios');
 const express = require('express');
 const { ipcMain } = require("electron");
 var http = require('http');
+const fs = require('fs');
 
+
+// Import the 'three' module
+//const THREE = require('three');
+
+// Now you can use 'THREE' to work with Three.js
+//const scene = new THREE.Scene();
 
 const isDev = process.env.NODE_ENV !== 'production';
 const isMac = process.platform === 'darwin';
@@ -22,8 +29,7 @@ function createMainWindow() {
             nodeIntegration: true,
             contextIsolation: false,
             enableRemoteModule: true,
-          }, 
-          
+          },           
     });
    
     // Open Dev Tools if in dev env.
@@ -38,19 +44,36 @@ function createMainWindow() {
     const app = express(); 
 
 
+//  to read .msh file
+    ipcMain.on('read-file', (event, filePath) => {
+        if (fs.existsSync(filePath)) {
+            console.log("Hello World!");
+            // Read the contents of the MSH file
+            fs.readFile(filePath, 'utf-8', (err, data) => {
+                if (err) {
+                    event.sender.send('file-read-error', err.message);
+                } else {
+                    // Send the data to the renderer process
+                    event.sender.send('file-data', data);
+                }
+            });
+        } 
+        else {
+            event.sender.send('file-not-found', `File not found: ${filePath}`);
+        }
+    });
+   
     let server; // Declare a variable to store the server instance
     let responseData = {}; // Initialize responseData with an empty object
  
     ipcMain.on('fetch-data', async (event, data) => {
-        const { rmin, dx, volfrac, maxfam, emod, pe, length, width, thick, ndivx, ndivy, ndivz } = data;
-   
+        const { rmin, dx, volfrac, maxfam, emod, pe, length, width, thick, ndivx, ndivy, ndivz } = data;   
         // Update responseData with the new input values
         responseData = data;
     
         app.get('/api/try', (req, res) => {
             res.json(responseData); // Send the updated data in the response
         });
-   
         // Close the previous server instance if it exists
         if (server) {
             server.close(() => {
