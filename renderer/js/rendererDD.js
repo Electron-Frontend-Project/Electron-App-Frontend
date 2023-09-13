@@ -4,24 +4,24 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.m
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js";
 
 document.addEventListener('DOMContentLoaded', () => {
-    const readFile = document.getElementById('readFile');
+    const readFile = document.getElementById('readFileD');
     readFile.addEventListener('click', async () => {
-        const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR.msh'; // Replace with the actual file path
-        ipcRenderer.send('read-file', filePath);
+        const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR1.msh'; // Replace with the actual file path
+        ipcRenderer.send('read-file1', filePath);
     });
 });
 
-ipcRenderer.on('file-read-error', (event, errorMessage) => {
+ipcRenderer.on('file-read-error1', (event, errorMessage) => {
     // Handle the file read error here in the renderer process
     console.error('File read error:', errorMessage);
 });
 
-ipcRenderer.on('file-not-found', (event, errorMessage) => {
+ipcRenderer.on('file-not-found1', (event, errorMessage) => {
     // Handle the file not found error here in the renderer process
     console.error('File not found:', errorMessage);
 });
 
-ipcRenderer.on('file-data', (event, data) => {
+ipcRenderer.on('file-data1', (event, data) => {
   // Handle the received data here in the renderer process
     const lines = data.split('\n');
     console.log(lines);
