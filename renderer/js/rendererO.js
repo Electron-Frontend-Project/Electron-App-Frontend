@@ -6,27 +6,29 @@ import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/exampl
 document.addEventListener('DOMContentLoaded', () => {
     const readFile = document.getElementById('readFileO');
     readFile.addEventListener('click', async () => {
-        const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR2.msh'; // Replace with the actual file path
-        ipcRenderer.send('read-file2', filePath);
+        const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR1.msh'; // Replace with the actual file path
+        ipcRenderer.send('read-file1', filePath);
     });
 });
 
-ipcRenderer.on('file-read-error2', (event, errorMessage) => {
+ipcRenderer.on('file-read-error1', (event, errorMessage) => {
     // Handle the file read error here in the renderer process
     console.error('File read error:', errorMessage);
 });
 
-ipcRenderer.on('file-not-found2', (event, errorMessage) => {
+ipcRenderer.on('file-not-found1', (event, errorMessage) => {
     // Handle the file not found error here in the renderer process
     console.error('File not found:', errorMessage);
 });
 
-ipcRenderer.on('file-data2', (event, data) => {
+ipcRenderer.on('file-data1', (event, data) => {
   // Handle the received data here in the renderer process
     const lines = data.split('\n');
     console.log(lines);
     // Create a scene, camera, and renderer
     const scene = new THREE.Scene();  
+    const axesHelper = new THREE.AxesHelper( 5 );
+scene.add( axesHelper );
     scene.background = new THREE.Color( "#ffffff" );  
     // Get the container element by its class name
     const container = document.querySelector('.topology-part');   
@@ -60,12 +62,12 @@ ipcRenderer.on('file-data2', (event, data) => {
             const y = parseFloat(values[1]);
             const z = parseFloat(values[2]);
 
-            const radius = 0.1 / 5; // Kürelerin yarıçapı
+            const radius = 0.03; // Kürelerin yarıçapı
             const widthSegments = 32; // Kürenin yüzey bölümleri
             const heightSegments = 32; // Kürenin yükseklik bölümleri
 
             const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
             const sphere = new THREE.Mesh(geometry, material);
             sphere.position.set(x, y, z);
             scene.add(sphere);

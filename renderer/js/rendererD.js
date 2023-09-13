@@ -4,30 +4,33 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.m
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js";
 
 document.addEventListener('DOMContentLoaded', () => {
-    const readFile = document.getElementById('readFileD');
+    const readFile = document.getElementById('readFileDD');
     readFile.addEventListener('click', async () => {
-        const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR1.msh'; // Replace with the actual file path
-        ipcRenderer.send('read-file1', filePath);
+        const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR2.msh'; // Replace with the actual file path
+        ipcRenderer.send('read-file2', filePath);
     });
 });
 
-ipcRenderer.on('file-read-error1', (event, errorMessage) => {
+ipcRenderer.on('file-read-error2', (event, errorMessage) => {
     // Handle the file read error here in the renderer process
     console.error('File read error:', errorMessage);
 });
 
-ipcRenderer.on('file-not-found1', (event, errorMessage) => {
+ipcRenderer.on('file-not-found2', (event, errorMessage) => {
     // Handle the file not found error here in the renderer process
     console.error('File not found:', errorMessage);
 });
 
-ipcRenderer.on('file-data1', (event, data) => {
+ipcRenderer.on('file-data2', (event, data) => {
   // Handle the received data here in the renderer process
     const lines = data.split('\n');
     console.log(lines);
     // Create a scene, camera, and renderer
     const scene = new THREE.Scene();  
     scene.background = new THREE.Color( "#ffffff" );  
+
+    
+    
     // Get the container element by its class name
     const container = document.querySelector('.design-part');   
     // Create a camera with appropriate aspect ratio and size
@@ -41,7 +44,12 @@ ipcRenderer.on('file-data1', (event, data) => {
     container.appendChild(renderer.domElement); 
     // Create OrbitControls
     const controls = new OrbitControls(camera, renderer.domElement);
+    const axesHelper = new THREE.AxesHelper( 5 );
+    scene.add( axesHelper );
 
+
+    
+    
     // Add ambient light to the scene
     const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
     scene.add(ambientLight);
@@ -60,12 +68,12 @@ ipcRenderer.on('file-data1', (event, data) => {
             const y = parseFloat(values[1]);
             const z = parseFloat(values[2]);
 
-            const radius = 0.1 / 5; // Kürelerin yarıçapı
+            const radius = 0.03; // Kürelerin yarıçapı
             const widthSegments = 32; // Kürenin yüzey bölümleri
             const heightSegments = 32; // Kürenin yükseklik bölümleri
 
             const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
             const sphere = new THREE.Mesh(geometry, material);
             sphere.position.set(x, y, z);
             scene.add(sphere);
@@ -78,6 +86,7 @@ ipcRenderer.on('file-data1', (event, data) => {
         requestAnimationFrame(animate);
         controls.update(); // Update controls in the animation loop
         renderer.render(scene, camera);
+        
     };
 
     animate();
