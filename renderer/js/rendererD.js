@@ -27,10 +27,7 @@ ipcRenderer.on('file-data2', (event, data) => {
     console.log(lines);
     // Create a scene, camera, and renderer
     const scene = new THREE.Scene();  
-    scene.background = new THREE.Color( "#ffffff" );  
-
-    
-    
+    scene.background = new THREE.Color( "#ffffff" );    
     // Get the container element by its class name
     const container = document.querySelector('.design-part');   
     // Create a camera with appropriate aspect ratio and size
@@ -47,9 +44,32 @@ ipcRenderer.on('file-data2', (event, data) => {
     const axesHelper = new THREE.AxesHelper( 5 );
     scene.add( axesHelper );
 
+    const group = new THREE.Group();   
+    // merge point position
+    const mergePosition = new THREE.Vector3(2, -2, 0); 
+    // X axis
+    const dirX = new THREE.Vector3(1, 0, 0);
+    dirX.normalize();
+    const colorX = 0xff0000;
+    const arrowHelperX = new THREE.ArrowHelper(dirX, mergePosition, 1, colorX);
+    group.add(arrowHelperX);
+    // Y axis
+    const dirY = new THREE.Vector3(0, 1, 0);
+    dirY.normalize();
+    const colorY = 0x00ff00;
+    const arrowHelperY = new THREE.ArrowHelper(dirY, mergePosition, 1, colorY);
+    group.add(arrowHelperY);
+    // Z axis
+    const dirZ = new THREE.Vector3(0, 0, 1);
+    dirZ.normalize();
+    const colorZ = 0x0000ff;
+    const arrowHelperZ = new THREE.ArrowHelper(dirZ, mergePosition, 1, colorZ);
+    group.add(arrowHelperZ);
 
-    
-    
+    scene.add(group);
+    // fixed object group
+    const fixedObjectGroup = new THREE.Group();
+    scene.add(fixedObjectGroup);
     // Add ambient light to the scene
     const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
     scene.add(ambientLight);
@@ -90,6 +110,7 @@ ipcRenderer.on('file-data2', (event, data) => {
     };
 
     animate();
+
 });
 
 
