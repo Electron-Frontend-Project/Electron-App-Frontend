@@ -214,6 +214,30 @@ body {
   margin-bottom: 100px;
   border: 1px solid var(--primary-color-dark);
 }
+.corner-box {
+  position: absolute;
+  bottom: 10px; 
+  right: 10px; 
+  width: 20%; 
+  height: 20%; 
+  background-color: #fff; 
+  border: 1px solid #fff; 
+  z-index: 2; 
+}
+.position {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  z-index: 2;
+  display: none;
+}
+
+.context-menu {
+  display: none;
+  position: absolute;
+  z-index: 10;
+}
+
 
 .topology-part {
   position: fixed;

@@ -27,8 +27,8 @@ ipcRenderer.on('file-data1', (event, data) => {
     console.log(lines);
     // Create a scene, camera, and renderer
     const scene = new THREE.Scene();  
-    const axesHelper = new THREE.AxesHelper( 5 );
-    scene.add( axesHelper );
+ //   const axesHelper = new THREE.AxesHelper( 5 );
+ //   scene.add( axesHelper );
     scene.background = new THREE.Color( "#ffffff" ); 
 
     const group = new THREE.Group();   
