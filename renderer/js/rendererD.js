@@ -32,7 +32,7 @@ ipcRenderer.on('file-data2', (event, data) => {
     scene2.background = new THREE.Color( "#ffffff" );    
     // Get the container element by its class name
     const container = document.querySelector('.design-part');   
-    const container2 = document.querySelector('.corner-box');
+    const container2 = document.querySelector('.corner-boxD');
     // Create a camera with appropriate aspect ratio and size
     const width = container.clientWidth;
     const height = container.clientHeight;
@@ -57,105 +57,62 @@ ipcRenderer.on('file-data2', (event, data) => {
     const axesHelper = new THREE.AxesHelper( 5 );
     scene2.add( axesHelper );
 
-    
+    let currentAxis = 'none';
 
 
 
-//    var menu = document.querySelector(".context-menu");
-//    var menuState = 0;
-//    var contextMenuActive = "block";
-//
-//    document.addEventListener("contextmenu", function (event) {
-//        console.log("Right click!");
-//        event.preventDefault();
-//        toggleMenuOn();
-//        positionMenu(event);
-//      });
-//
-//      function toggleMenuOn() {
-//        if (menuState !== 1) {
-//          menuState = 1;
-//          menu.classList.add(contextMenuActive);
-//          console.log("Right click!2");
-//        }
-//      }
-//
-//      function toggleMenuOff() {
-//        if (menuState !== 0) {
-//          menuState = 0;
-//          menu.classList.remove(contextMenuActive);
-//        }
-//      }
-//
-//      function getPosition(e) {
-//        var posx = 0;
-//        var posy = 0;
-//      
-//        if (!e) var e = window.event;
-//      
-//        if (e.pageX || e.pageY) {
-//          posx = e.pageX;
-//          posy = e.pageY;
-//        } else if (e.clientX || e.clientY) {
-//          posx =
-//            e.clientX +
-//            document.body.scrollLeft +
-//            document.documentElement.scrollLeft;
-//          posy =
-//            e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-//        }
-//      
-//        return {
-//          x: posx,
-//          y: posy
-//        };
-//      }
-//
-//      // Position the Context Menu in right position.
-//function positionMenu(e) {
-//    console.log("Right click!3");
-//    let clickCoords = getPosition(e);
-//    let clickCoordsX = clickCoords.x;
-//    let clickCoordsY = clickCoords.y;
-//  
-//    let menuWidth = menu.offsetWidth + 4;
-//    let menuHeight = menu.offsetHeight + 4;
-//  
-//    let windowWidth = window.innerWidth;
-//    let windowHeight = window.innerHeight;
-//  
-//    if (windowWidth - clickCoordsX < menuWidth) {
-//      menu.style.left = windowWidth - menuWidth + "px";
-//    } else {
-//      menu.style.left = clickCoordsX + "px";
-//    }
-//  
-//    if (windowHeight - clickCoordsY < menuHeight) {
-//      menu.style.top = windowHeight - menuHeight + "px";
-//    } else {
-//      menu.style.top = clickCoordsY + "px";
-//    }
-//  }
-//
-//  // Event Listener for Close Context Menu when outside of menu clicked
-//document.addEventListener("click", (e) => {
-//    var button = e.which || e.button;
-//    if (button === 1) {
-//      toggleMenuOff();
-//    }
-//  });
-//  
-//  // Close Context Menu on Esc key press
-//  window.onkeyup = function (e) {
-//    if (e.keyCode === 27) {
-//      toggleMenuOff();
-//    }
-//  };
-//
-//
-//
-//
-//
+    document.onclick = hideMenu;
+    document.oncontextmenu = rightClick;
+      
+    function hideMenu() {
+        document.getElementById("contextMenuD")
+                .style.display = "none"
+    }
+  
+    function rightClick(e) {
+        e.preventDefault();
+  
+        if (document.getElementById("contextMenuD")
+                .style.display == "block")
+            hideMenu();
+        else{
+            var menu = document.getElementById("contextMenuD")
+            
+  
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + "px";
+            menu.style.top = e.pageY + "px";
+
+
+
+           
+            // click x-axis
+            document.getElementById("x-axis").addEventListener('click', function(e) {
+                e.preventDefault();
+                currentAxis = 'x';
+                alert('clicked x axis');
+                hideMenu();
+            });
+  
+            // click y-axis
+            document.getElementById("y-axis").addEventListener('click', function(e) {
+                e.preventDefault();
+                currentAxis = 'y';
+                alert('clicked y axis');
+                hideMenu();
+            });
+
+            // click x-axis
+            document.getElementById("z-axis").addEventListener('click', function(e) {
+                e.preventDefault();
+                currentAxis = 'z';
+                alert('clicked z axis');
+                hideMenu();
+            });
+
+        }
+    }
+
 
 
 
@@ -188,7 +145,22 @@ ipcRenderer.on('file-data2', (event, data) => {
             const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
             const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
             const sphere = new THREE.Mesh(geometry, material);
-            sphere.position.set(x, y, z);
+            //sphere.position.set(x, y, z);
+            switch (currentAxis) {
+                case 'x':
+                    sphere.position.set(x, 0, 0);
+                    break;
+                case 'y':
+                    sphere.position.set(0, y, 0);
+                    break;
+                case 'z':
+                    sphere.position.set(0, 0, z);
+                    break;
+                default:
+                    sphere.position.set(x, y, z);
+                    break;
+            }
+    
             scene.add(sphere);
 
             

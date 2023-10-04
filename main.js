@@ -5,6 +5,7 @@ const express = require('express');
 const { ipcMain } = require("electron");
 var http = require('http');
 const fs = require('fs');
+const { spawn } = require('child_process');
 
 
 // Import the 'three' module
@@ -45,21 +46,40 @@ function createMainWindow() {
 
 
 //  to read .msh file
-    ipcMain.on('read-file', (event, filePath) => {
+    ipcMain.on('read-file1', (event, filePath) => {
         if (fs.existsSync(filePath)) {
             console.log("Hello World!");
             // Read the contents of the MSH file
             fs.readFile(filePath, 'utf-8', (err, data) => {
                 if (err) {
-                    event.sender.send('file-read-error', err.message);
+                    event.sender.send('file-read-error1', err.message);
                 } else {
                     // Send the data to the renderer process
-                    event.sender.send('file-data', data);
+                    event.sender.send('file-data1', data);
                 }
             });
         } 
         else {
-            event.sender.send('file-not-found', `File not found: ${filePath}`);
+            event.sender.send('file-not-found1', `File not found: ${filePath}`);
+        }
+    });
+
+    //  to read .msh file
+    ipcMain.on('read-file2', (event, filePath) => {
+        if (fs.existsSync(filePath)) {
+            console.log("Hello World!");
+            // Read the contents of the MSH file
+            fs.readFile(filePath, 'utf-8', (err, data) => {
+                if (err) {
+                    event.sender.send('file-read-error2', err.message);
+                } else {
+                    // Send the data to the renderer process
+                    event.sender.send('file-data2', data);
+                }
+            });
+        } 
+        else {
+            event.sender.send('file-not-found2', `File not found: ${filePath}`);
         }
     });
    
@@ -90,6 +110,18 @@ function createMainWindow() {
             console.log(`API server is running on http://localhost:${appPort}/api/try`);
         });
     }
+    // play button java -jar file.jar
+    var ps = require("child_process");
+    ipcMain.on('start-backend', async (event, jardir) =>{
+        let server = jardir + 'demo1-0.0.1-SNAPSHOT.jar';
+        console.log(`Launching server with jar ${server}...`);
+        serverProcess = ps.spawn('java', ['-jar', server]);
+        if (serverProcess.pid) {
+            console.log('Server PID: ' + serverProcess.pid);
+        } else {
+            console.log('Failed to launch server process.');
+        }
+    });
 }
 
 app.whenReady().then(() => {     //when the app is ready, creates the main func
