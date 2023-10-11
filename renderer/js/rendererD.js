@@ -11,6 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// to get dx
+let dx;
+ipcRenderer.on('get-dxD', (event, data) => {    
+    dx = data;
+});
+
 ipcRenderer.on('file-read-error2', (event, errorMessage) => {
     // Handle the file read error here in the renderer process
     console.error('File read error:', errorMessage);
@@ -22,8 +28,11 @@ ipcRenderer.on('file-not-found2', (event, errorMessage) => {
 });
 
 ipcRenderer.on('file-data2', (event, data) => {
-  // Handle the received data here in the renderer process
+    // Handle the received data here in the renderer process
     const lines = data.split('\n');
+    if (dx) {
+    console.log('dx1:',dx);
+    }
     console.log(lines);
     // Create a scene, camera, and renderer
     const scene = new THREE.Scene();  
@@ -50,7 +59,7 @@ ipcRenderer.on('file-data2', (event, data) => {
     // Append the renderer's canvas to the container
     container.appendChild(renderer.domElement); 
     container2.appendChild(renderer2.domElement);
- //   // Create OrbitControls
+    // Create OrbitControls
     const controls = new OrbitControls(camera, renderer.domElement);
     const controls2 = new OrbitControls(camera2, renderer2.domElement);
  
@@ -58,8 +67,6 @@ ipcRenderer.on('file-data2', (event, data) => {
     scene2.add( axesHelper );
 
     let currentAxis = 'none';
-
-
 
     document.onclick = hideMenu;
     document.oncontextmenu = rightClick;
@@ -77,15 +84,11 @@ ipcRenderer.on('file-data2', (event, data) => {
             hideMenu();
         else{
             var menu = document.getElementById("contextMenuD")
-            
-  
+
             menu.style.display = 'block';
             menu.style.left = e.pageX + "px";
             menu.style.top = e.pageY + "px";
 
-
-
-           
             // click x-axis
             document.getElementById("x-axis").addEventListener('click', function(e) {
                 e.preventDefault();
@@ -109,13 +112,8 @@ ipcRenderer.on('file-data2', (event, data) => {
                 alert('clicked z axis');
                 hideMenu();
             });
-
         }
     }
-
-
-
-
 
     // fixed object group
     const fixedObjectGroup = new THREE.Group();
@@ -129,7 +127,13 @@ ipcRenderer.on('file-data2', (event, data) => {
     directionalLight.position.set(1, 1, 1); // Set the direction of the light
     scene.add(directionalLight);
 
-    // sphere
+    const radius = dx/2; // Radius of spheres
+    const widthSegments = 32; // Surface parts of the sphere
+    const heightSegments = 32; // Height divisions of the sphere
+    const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+    const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+
+    // SPHERE
     lines.forEach(line => {
         const values = line.split('\t'); // tab separated
 
@@ -137,15 +141,9 @@ ipcRenderer.on('file-data2', (event, data) => {
             const x = parseFloat(values[0]);
             const y = parseFloat(values[1]);
             const z = parseFloat(values[2]);
-
-            const radius = 0.03; // Kürelerin yarıçapı
-            const widthSegments = 32; // Kürenin yüzey bölümleri
-            const heightSegments = 32; // Kürenin yükseklik bölümleri
-
-            const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-            const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+        
             const sphere = new THREE.Mesh(geometry, material);
-            //sphere.position.set(x, y, z);
+           
             switch (currentAxis) {
                 case 'x':
                     sphere.position.set(x, 0, 0);
@@ -160,14 +158,11 @@ ipcRenderer.on('file-data2', (event, data) => {
                     sphere.position.set(x, y, z);
                     break;
             }
-    
-            scene.add(sphere);
-
             
-
+            scene.add(sphere);         
         }
     });
-    
+    geometry.dispose();
     camera.position.z = 5;
 
     const animate = () => {
@@ -189,7 +184,7 @@ ipcRenderer.on('file-data2', (event, data) => {
     };
 
     animate();
-
+   
 });
 
 

@@ -1,18 +1,12 @@
 const path = require('path');
 const { app, BrowserWindow, Menu, dialog} = require('electron');
+//app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096');
 const axios = require('axios');
 const express = require('express');
 const { ipcMain } = require("electron");
 var http = require('http');
 const fs = require('fs');
 const { spawn } = require('child_process');
-
-
-// Import the 'three' module
-//const THREE = require('three');
-
-// Now you can use 'THREE' to work with Three.js
-//const scene = new THREE.Scene();
 
 const isDev = process.env.NODE_ENV !== 'production';
 const isMac = process.platform === 'darwin';
@@ -43,8 +37,7 @@ function createMainWindow() {
 //  to get values and send to API
     const appPort = 3000; //  the port number 
     const app = express(); 
-
-
+    
 //  to read .msh file
     ipcMain.on('read-file1', (event, filePath) => {
         if (fs.existsSync(filePath)) {
@@ -86,7 +79,21 @@ function createMainWindow() {
     let server; // Declare a variable to store the server instance
     let responseData = {}; // Initialize responseData with an empty object
  
+    // to send dx for radius
+    ipcMain.on('send-dxD', (event, data) => {
+        const {dx} = data;
+        event.sender.send('get-dxD', dx);
+        console.log("sending dx...");
+    });
+    ipcMain.on('send-dxO', (event, data) => {
+        const {dx} = data;
+        event.sender.send('get-dxO', dx);
+        console.log("sending dx...");
+    });
+
     ipcMain.on('fetch-data', async (event, data) => {
+
+        
         const { rmin, dx, volfrac, length, width, thick, ndivx, ndivy, ndivz } = data;   
         // Update responseData with the new input values
         responseData = data;
@@ -141,7 +148,7 @@ app.whenReady().then(() => {     //when the app is ready, creates the main func
                                 { name: 'All Files', extensions: ['*'] }
                             ]
                         });
-
+                        
                         // Handle selected file(s)
                         if (files && files.length > 0) {
                             const filePath = files[0]; // Use the first selected file

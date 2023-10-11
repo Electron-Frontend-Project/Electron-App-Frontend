@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Send all parameters to the main process using IPC
         ipcRenderer.send('fetch-data', { rmin, dx, volfrac, length, width, thick, ndivx, ndivy, ndivz});
+        ipcRenderer.send('send-dxD', {dx});
+        ipcRenderer.send('send-dxO', {dx});
     });
 });
 

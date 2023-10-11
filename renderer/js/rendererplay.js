@@ -1,7 +1,6 @@
 const { ipcRenderer } = require('electron');
 const jardir = 'C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/pdtopolys/fea/target/';
 
-
 document.addEventListener('DOMContentLoaded', () => {
     const playbutton = document.getElementById('play-button');
 
