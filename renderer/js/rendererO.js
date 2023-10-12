@@ -77,47 +77,43 @@ ipcRenderer.on('file-data1', (event, data) => {
                 .style.display = "none"
     }
     
-        function rightClick(e) {
-            e.preventDefault();
-    
-            if (document.getElementById("contextMenuO")
-                    .style.display == "block")
-                hideMenu();
-            else{
-                var menu = document.getElementById("contextMenuO")
+    function rightClick(e) {
+        e.preventDefault();
+        if (document.getElementById("contextMenuO")
+                .style.display == "block")
+            hideMenu();
+        else{
+            var menu = document.getElementById("contextMenuO")
                 
-      
-                menu.style.display = 'block';
-                menu.style.left = e.pageX + "px";
-                menu.style.top = e.pageY + "px";
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + "px";
+            menu.style.top = e.pageY + "px";
+
+            // click x-axis
+            document.getElementById("x-axis").addEventListener('click', function(e) {
+                e.preventDefault();
+                currentAxis = 'x';
+                alert('clicked x axis');
+                hideMenu();
+            });
     
-  
-                // click x-axis
-                document.getElementById("x-axis").addEventListener('click', function(e) {
-                    e.preventDefault();
-                    currentAxis = 'x';
-                    alert('clicked x axis');
-                    hideMenu();
-                });
-      
-                // click y-axis
-                document.getElementById("y-axis").addEventListener('click', function(e) {
-                    e.preventDefault();
-                    currentAxis = 'y';
-                    alert('clicked y axis');
-                    hideMenu();
-                });
-    
-                // click x-axis
-                document.getElementById("z-axis").addEventListener('click', function(e) {
-                    e.preventDefault();
-                    currentAxis = 'z';
-                    alert('clicked z axis');
-                    hideMenu();
-                }); 
-            }
+            // click y-axis
+            document.getElementById("y-axis").addEventListener('click', function(e) {
+                e.preventDefault();
+                currentAxis = 'y';
+                alert('clicked y axis');
+                hideMenu();
+            });
+
+            // click x-axis
+            document.getElementById("z-axis").addEventListener('click', function(e) {
+                e.preventDefault();
+                currentAxis = 'z';
+                alert('clicked z axis');
+                hideMenu();
+            }); 
         }
-  
+    }  
     // fixed object group
     const fixedObjectGroup = new THREE.Group();
     scene.add(fixedObjectGroup);
@@ -130,7 +126,7 @@ ipcRenderer.on('file-data1', (event, data) => {
     directionalLight.position.set(1, 1, 1); // Set the direction of the light
     scene.add(directionalLight);
 
-    const radius = dx/2; // Radius of spheres  (dx/2) yap
+    const radius = dx/2; // Radius of spheres  
     const widthSegments = 32; // Surface parts of the sphere
     const heightSegments = 32; // Height divisions of the sphere
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
@@ -170,21 +166,20 @@ ipcRenderer.on('file-data1', (event, data) => {
     const animate = () => {
         requestAnimationFrame(animate);
 
-    // Update controls for both cameras
-    controls.update();
-    controls2.update();
-
-    // Update the position and target of camera2 based on camera1
-    camera2.position.copy(camera.position);
-    camera2.position.sub(controls.target);
-    camera2.position.setLength(CAM_DISTANCE);
-    camera2.lookAt(scene2.position);
-
-    // Render both scenes with their respective cameras and renderers
-    renderer.render(scene, camera);
-    renderer2.render(scene2, camera2);
-    };
-
+        // Update controls for both cameras
+        controls.update();
+        controls2.update();
+        
+        // Update the position and target of camera2 based on camera1
+        camera2.position.copy(camera.position);
+        camera2.position.sub(controls.target);
+        camera2.position.setLength(CAM_DISTANCE);
+        camera2.lookAt(scene2.position);
+        
+        // Render both scenes with their respective cameras and renderers
+        renderer.render(scene, camera);
+        renderer2.render(scene2, camera2);
+        };
     animate();  
 });
   

@@ -1,6 +1,5 @@
 const path = require('path');
 const { app, BrowserWindow, Menu, dialog} = require('electron');
-//app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096');
 const axios = require('axios');
 const express = require('express');
 const { ipcMain } = require("electron");
@@ -31,14 +30,13 @@ function createMainWindow() {
     if (isDev) {
         mainWindow.webContents.openDevTools();
     }
-
     mainWindow.loadFile(path.join(__dirname, './renderer/index.html'));      //creating frontend and uploading it to backend file (main.js)
  
-//  to get values and send to API
+    //  to get values and send to API
     const appPort = 3000; //  the port number 
     const app = express(); 
     
-//  to read .msh file
+    //  to read .msh file
     ipcMain.on('read-file1', (event, filePath) => {
         if (fs.existsSync(filePath)) {
             console.log("Hello World!");
@@ -55,8 +53,7 @@ function createMainWindow() {
         else {
             event.sender.send('file-not-found1', `File not found: ${filePath}`);
         }
-    });
-
+    }); 
     //  to read .msh file
     ipcMain.on('read-file2', (event, filePath) => {
         if (fs.existsSync(filePath)) {
@@ -91,9 +88,7 @@ function createMainWindow() {
         console.log("sending dx...");
     });
 
-    ipcMain.on('fetch-data', async (event, data) => {
-
-        
+    ipcMain.on('fetch-data', async (event, data) => { 
         const { rmin, dx, volfrac, length, width, thick, ndivx, ndivy, ndivz } = data;   
         // Update responseData with the new input values
         responseData = data;
@@ -117,17 +112,24 @@ function createMainWindow() {
             console.log(`API server is running on http://localhost:${appPort}/api/try`);
         });
     }
-    // play button java -jar file.jar
+    // play button java -jar file.jar   
     var ps = require("child_process");
     ipcMain.on('start-backend', async (event, jardir) =>{
         let server = jardir + 'demo1-0.0.1-SNAPSHOT.jar';
         console.log(`Launching server with jar ${server}...`);
         serverProcess = ps.spawn('java', ['-jar', server]);
-        if (serverProcess.pid) {
-            console.log('Server PID: ' + serverProcess.pid);
-        } else {
-            console.log('Failed to launch server process.');
-        }
+        // backend process
+        serverProcess.stdout.on('data', (data) => {
+            console.log(`${data}`);
+        });
+        
+        serverProcess.stderr.on('data', (data) => {
+            console.error(`Server Error: ${data}`);
+        });
+        
+        serverProcess.on('close', (code) => {
+            console.log(`Server Process exited with code ${code}`);
+        });
     });
 }
 

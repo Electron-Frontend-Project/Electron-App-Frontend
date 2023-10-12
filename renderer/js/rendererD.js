@@ -77,14 +77,12 @@ ipcRenderer.on('file-data2', (event, data) => {
     }
   
     function rightClick(e) {
-        e.preventDefault();
-  
+        e.preventDefault();  
         if (document.getElementById("contextMenuD")
                 .style.display == "block")
             hideMenu();
         else{
             var menu = document.getElementById("contextMenuD")
-
             menu.style.display = 'block';
             menu.style.left = e.pageX + "px";
             menu.style.top = e.pageY + "px";
@@ -136,7 +134,6 @@ ipcRenderer.on('file-data2', (event, data) => {
     // SPHERE
     lines.forEach(line => {
         const values = line.split('\t'); // tab separated
-
         if (values.length === 3) {
             const x = parseFloat(values[0]);
             const y = parseFloat(values[1]);
@@ -157,8 +154,7 @@ ipcRenderer.on('file-data2', (event, data) => {
                 default:
                     sphere.position.set(x, y, z);
                     break;
-            }
-            
+            }            
             scene.add(sphere);         
         }
     });
@@ -168,23 +164,21 @@ ipcRenderer.on('file-data2', (event, data) => {
     const animate = () => {
         requestAnimationFrame(animate);
 
-    // Update controls for both cameras
-    controls.update();
-    controls2.update();
-
-    // Update the position and target of camera2 based on camera1
-    camera2.position.copy(camera.position);
-    camera2.position.sub(controls.target);
-    camera2.position.setLength(CAM_DISTANCE);
-    camera2.lookAt(scene2.position);
-
-    // Render both scenes with their respective cameras and renderers
-    renderer.render(scene, camera);
-    renderer2.render(scene2, camera2);
-    };
-
-    animate();
-   
+        // Update controls for both cameras
+        controls.update();
+        controls2.update();
+        
+        // Update the position and target of camera2 based on camera1
+        camera2.position.copy(camera.position);
+        camera2.position.sub(controls.target);
+        camera2.position.setLength(CAM_DISTANCE);
+        camera2.lookAt(scene2.position);
+        
+        // Render both scenes with their respective cameras and renderers
+        renderer.render(scene, camera);
+        renderer2.render(scene2, camera2);
+        };
+    animate();   
 });
 
 
