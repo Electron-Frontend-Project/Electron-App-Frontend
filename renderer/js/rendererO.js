@@ -7,8 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const readFile = document.getElementById('readFileO');
     const dxInput = document.getElementById('dxInput');
     readFile.addEventListener('click', async () => {
-        const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR1.msh'; // Replace with the actual file path
-        ipcRenderer.send('read-file1', filePath);
+        const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR2.msh'; // Replace with the actual file path
+        //const dirPath = "C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit";
+        ipcRenderer.send('read-file2', filePath);
     });
 });
 
@@ -18,26 +19,27 @@ ipcRenderer.on('get-dxO', (event, data) => {
     dx = data;
 });
 
-ipcRenderer.on('file-read-error1', (event, errorMessage) => {
+ipcRenderer.on('file-read-error2', (event, errorMessage) => {
     // Handle the file read error here in the renderer process
     console.error('File read error:', errorMessage);
 });
 
-ipcRenderer.on('file-not-found1', (event, errorMessage) => {
+ipcRenderer.on('file-not-found2', (event, errorMessage) => {
     // Handle the file not found error here in the renderer process
     console.error('File not found:', errorMessage);
 });
 
-ipcRenderer.on('file-data1', (event, data) => {
+ipcRenderer.on('file-data2', (event, data) => {
     // Handle the received data here in the renderer process
     const lines = data.split('\n');
     if (dx) {
         console.log('dx:',dx);
     }
-    console.log(lines);
+   // console.log(lines);
     // Create a scene, camera, and renderer
     const scene = new THREE.Scene();  
     const scene2 = new THREE.Scene();
+    THREE.Object3D.DefaultUp.set(0.0, 0.0, 1.0); // z axis 
     scene.background = new THREE.Color( "#ffffff" );    
     scene2.background = new THREE.Color( "#ffffff" );    
     // Get the container element by its class name
@@ -126,6 +128,7 @@ ipcRenderer.on('file-data1', (event, data) => {
     directionalLight.position.set(1, 1, 1); // Set the direction of the light
     scene.add(directionalLight);
 
+    
     const radius = dx/2; // Radius of spheres  
     const widthSegments = 32; // Surface parts of the sphere
     const heightSegments = 32; // Height divisions of the sphere
@@ -181,6 +184,7 @@ ipcRenderer.on('file-data1', (event, data) => {
         renderer2.render(scene2, camera2);
         };
     animate();  
+        
 });
   
   

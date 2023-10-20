@@ -38,6 +38,25 @@ function createMainWindow() {
     
     //  to read .msh file
     ipcMain.on('read-file1', (event, filePath) => {
+       // fs.readdir(dirPath, function (err, files) {
+       //     if (err) {
+       //         throw new Error(err);
+       //     }
+       //     files.forEach(function (name) {
+       //         var filePath = path.join(dirPath, name);
+       //         fs.readFile(filePath, 'utf-8', (err, data) => {
+       //             if (err) {
+       //                 event.sender.send('file-read-error1', err.message);
+       //             } else {
+       //                 // Send the data to the renderer process
+       //                 event.sender.send('file-data1', data);                        
+       //                
+   //
+       //             }
+       //         });
+       //     });
+       // });
+
         if (fs.existsSync(filePath)) {
             console.log("Hello World!");
             // Read the contents of the MSH file
@@ -71,8 +90,7 @@ function createMainWindow() {
         else {
             event.sender.send('file-not-found2', `File not found: ${filePath}`);
         }
-    });
-   
+    });   
     let server; // Declare a variable to store the server instance
     let responseData = {}; // Initialize responseData with an empty object
  
@@ -91,8 +109,7 @@ function createMainWindow() {
     ipcMain.on('fetch-data', async (event, data) => { 
         const { rmin, dx, volfrac, length, width, thick, ndivx, ndivy, ndivz } = data;   
         // Update responseData with the new input values
-        responseData = data;
-    
+        responseData = data;    
         app.get('/api/try', (req, res) => {
             res.json(responseData); // Send the updated data in the response
         });
