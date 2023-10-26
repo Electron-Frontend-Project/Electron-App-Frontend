@@ -37,26 +37,7 @@ function createMainWindow() {
     const app = express(); 
     
     //  to read .msh file
-    ipcMain.on('read-file1', (event, filePath) => {
-       // fs.readdir(dirPath, function (err, files) {
-       //     if (err) {
-       //         throw new Error(err);
-       //     }
-       //     files.forEach(function (name) {
-       //         var filePath = path.join(dirPath, name);
-       //         fs.readFile(filePath, 'utf-8', (err, data) => {
-       //             if (err) {
-       //                 event.sender.send('file-read-error1', err.message);
-       //             } else {
-       //                 // Send the data to the renderer process
-       //                 event.sender.send('file-data1', data);                        
-       //                
-   //
-       //             }
-       //         });
-       //     });
-       // });
-
+    ipcMain.on('read-file1', (event, filePath) => {     
         if (fs.existsSync(filePath)) {
             console.log("Hello World!");
             // Read the contents of the MSH file
@@ -74,23 +55,78 @@ function createMainWindow() {
         }
     }); 
     //  to read .msh file
-    ipcMain.on('read-file2', (event, filePath) => {
-        if (fs.existsSync(filePath)) {
-            console.log("Hello World!");
-            // Read the contents of the MSH file
-            fs.readFile(filePath, 'utf-8', (err, data) => {
+    ipcMain.on('read-file2', async (event, dirPath) => {
+        try {
+            const files = await readAndSortFiles(dirPath);
+            for (const name of files) {
+                const filePath = path.join(dirPath, name);
+                console.log("Reading file:", name);
+                const data = await readFileAsync(filePath);
+                event.sender.send('file-data2', { name, content: data });
+            }
+        } catch (err) {
+            event.sender.send('file-read-error2', err.message);
+        }
+        //if (fs.existsSync(filePath)) {
+        //    console.log("Hello World!");
+        //    // Read the contents of the MSH file
+        //    fs.readFile(filePath, 'utf-8', (err, data) => {
+        //        if (err) {
+        //            event.sender.send('file-read-error2', err.message);
+        //        } else {
+        //            // Send the data to the renderer process
+        //            event.sender.send('file-data2', data);
+        //        }
+        //    });
+        //} 
+        //else {
+        //    event.sender.send('file-not-found2', `File not found: ${filePath}`);
+        //}
+    });   
+
+
+
+    async function readAndSortFiles(dirPath) {
+        return new Promise((resolve, reject) => {
+            fs.readdir(dirPath, (err, files) => {
                 if (err) {
-                    event.sender.send('file-read-error2', err.message);
+                    reject(err);
                 } else {
-                    // Send the data to the renderer process
-                    event.sender.send('file-data2', data);
+                    files.sort((a, b) => {
+                        const aNumber = parseInt(a.match(/\d+/)[0]);
+                        const bNumber = parseInt(b.match(/\d+/)[0]);
+                        return aNumber - bNumber;
+                    });
+                    resolve(files);
                 }
             });
-        } 
-        else {
-            event.sender.send('file-not-found2', `File not found: ${filePath}`);
-        }
-    });   
+        });
+    }
+    
+    async function readFileAsync(filePath) {
+        return new Promise((resolve, reject) => {
+            fs.readFile(filePath, 'utf-8', (err, data) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(data);
+                }
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
     let server; // Declare a variable to store the server instance
     let responseData = {}; // Initialize responseData with an empty object
  

@@ -104,7 +104,7 @@ ipcRenderer.on('file-data1', (event, data) => {
                 hideMenu();
             });
 
-            // click x-axis
+            // click z-axis
             document.getElementById("z-axis").addEventListener('click', function(e) {
                 e.preventDefault();
                 currentAxis = 'z';
@@ -131,6 +131,7 @@ ipcRenderer.on('file-data1', (event, data) => {
     const heightSegments = 32; // Height divisions of the sphere
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
     const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+    
 
     // SPHERE
     lines.forEach(line => {
@@ -155,14 +156,16 @@ ipcRenderer.on('file-data1', (event, data) => {
                 default:
                     sphere.position.set(x, y, z);
                     break;
-            }            
+            }          
+              
             scene.add(sphere);         
         }
     });
     geometry.dispose();
-    camera.position.z = 5;
+    camera.position.z = 50;
 
     const animate = () => {
+        
         requestAnimationFrame(animate);
 
         // Update controls for both cameras
@@ -179,9 +182,11 @@ ipcRenderer.on('file-data1', (event, data) => {
         renderer.render(scene, camera);
         renderer2.render(scene2, camera2);
         };
+        
     animate();  
     renderer.dispose();
     renderer2.dispose(); 
+    
 });
 
 
