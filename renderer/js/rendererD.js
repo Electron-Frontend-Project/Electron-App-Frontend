@@ -6,7 +6,8 @@ import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/exampl
 document.addEventListener('DOMContentLoaded', () => {
     const readFile = document.getElementById('readFileDD');
     readFile.addEventListener('click', async () => {
-        const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR1.msh'; // Replace with the actual file path
+       const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR1.msh'; // Replace with the actual file path
+      // const filePath = 'C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit/solid31.msh';
         ipcRenderer.send('read-file1', filePath);
     });
 });
