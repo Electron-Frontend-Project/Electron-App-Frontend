@@ -122,6 +122,7 @@
       <div class="design-part" id="scene-container1">
         <button  id="readFileDD">Read File</button>
         <script type="module" src="js/rendererD.js" ></script>  
+        <script type="module" src="js/renderernode.js" ></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <span class="design-text" style="margin-left: 10px; color: #7d7d7d;">Design Domain</span>
         <div class="corner-boxD"></div>
@@ -155,6 +156,7 @@
     </div>
 
     <div class="bottom-part">
+      <script type="module" src="js/renderernode.js" ></script>   
       <div class="info-line">
         <span p class="info-text">Information Line: There will be written all of the operations made in the program.</span>
       </div>
@@ -164,7 +166,7 @@
       </div>
 
       <div class="unit-line">
-        <span p class="unit-text"><span p class="total-node">Total Node: 200000</span>    |    <span p class="total-node">Unit: mm</span>    |    <span p class="current-it-num">Current Iteration Number: 100</span></span>
+        <span p class="unit-text"><span p class="total-node" id="totnode">Total Node: 200000</span>    |    <span p class="total-node">Unit: mm</span>    |    <span p class="current-it-num" id="It">Current Iteration Number: 100</span></span>
       </div>
       
     </div>
