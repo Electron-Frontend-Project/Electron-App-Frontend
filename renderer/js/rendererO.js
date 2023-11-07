@@ -33,13 +33,17 @@ ipcRenderer.on('file-not-found2', (event, errorMessage) => {
 let i=1;
 
 let camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
-directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere; 
-    
+directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
+container
+; 
+
+
 init();
 
 function init() {
 
-    const container = document.querySelector('.topology-part');   
+    spheres = [];
+    container = document.querySelector('.topology-part');   
     const container2 = document.querySelector('.corner-boxO');
 
     scene = new THREE.Scene();  
@@ -59,9 +63,12 @@ function init() {
     camera.position.z = 30;
     renderer = new THREE.WebGLRenderer({ alpha: true }); 
     renderer2 = new THREE.WebGLRenderer({ alpha: true }); 
-    renderer.setClearColor( 0x000000, 0 );
-    renderer2.setClearColor( 0x000000, 0 );
+    renderer.setClearColor( 0x000000, 0 ); // background color
+    renderer2.setClearColor( 0x000000, 0 ); // backgorund color
     // Set the renderer's size to match the container
+
+  
+
     renderer.setSize(width, height);   
     renderer2.setSize(width2, height2); 
     // Append the renderer's canvas to the container
@@ -73,13 +80,12 @@ function init() {
     axesHelper = new THREE.AxesHelper( 5 );
     scene2.add( axesHelper );
     currentAxis = 'none';
-    document.onclick = hideMenu;
+
+    
+    
     document.oncontextmenu = rightClick;
     
-    function hideMenu() {
-        document.getElementById("contextMenuO")
-                .style.display = "none"
-    }
+    
     function rightClick(e) {
         e.preventDefault();
         if (document.getElementById("contextMenuO")
@@ -137,6 +143,12 @@ function init() {
        
         // Now you have access to both the file name and the content
         console.log("Received file:", name);
+
+        // Remove existing spheres
+        while (spheres.length > 0) {
+            const sphere = spheres.pop();
+            fixedObjectGroup.remove(sphere);
+        }
                
        //clearLastModel();
        console.log(i+=1);
@@ -153,7 +165,7 @@ function init() {
         if (dx) {
         console.log('dx1:',dx);
         }
-        console.log(lines); 
+       // console.log(lines); 
        
         animate();
         
@@ -175,19 +187,26 @@ function animate() {
     render();
 }
 
+
+
 function createSphere() {
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-    const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+    const defaultMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
     // SPHERE
     lines.forEach(line => {
         const values = line.split('\t'); // tab separated
 
-        if (values.length === 3) {
+        if (values.length === 8) {
             const x = parseFloat(values[0]);
             const y = parseFloat(values[1]);
             const z = parseFloat(values[2]);
+            const strain = parseFloat(values[3]);
+            const designvar = values[4];
+            const dispx = parseFloat(values[5]);
+            const dispy = parseFloat(values[6]);
+            const dispz = parseFloat(values[7]);
 
-            sphere = new THREE.Mesh(geometry, material);
+            sphere = new THREE.Mesh(geometry, defaultMaterial.clone());
 
             switch (currentAxis) {
                 case 'x':
@@ -205,13 +224,82 @@ function createSphere() {
             }
             
            // scene.add(sphere);
-           fixedObjectGroup.add(sphere);       
+            sphere.designvar = designvar;
+            sphere.displacement = dispx + " " + dispy + " " + dispz;
+            sphere.strain = strain;
+            spheres.push(sphere);    
+            fixedObjectGroup.add(sphere);  
+            spheres.push(sphere);
+       
         }
     });
     // clean up
     geometry.dispose();
-    material.dispose();  
+    defaultMaterial.dispose();  
+    
 }
+
+var infoBox = document.getElementById("info-box2"); // text box for mesh info
+const canvas = document.querySelector('canvas');
+const boxPosition = new THREE.Vector3();
+renderer.domElement.addEventListener('click', onCanvasClick, false);
+
+    var INTERSECTED;
+
+    function onCanvasClick(event) {
+        // Calculate the mouse click position in normalized device coordinates (NDC)
+        var mouse = new THREE.Vector2();
+        const containerRect = container.getBoundingClientRect();
+        const x = ((event.clientX - containerRect.left) / container.clientWidth) * 2 - 1;
+        const y = -((event.clientY - containerRect.top) / container.clientHeight) * 2 + 1;
+
+        // Raycasting is used to determine which object was clicked
+        var raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera({ x, y }, camera);
+        raycaster.params.Points.threshold = 0.001; // Adjust the threshold as needed
+
+
+        var intersects = raycaster.intersectObjects(spheres, true);
+
+        if (intersects.length > 0) {
+            if (INTERSECTED != intersects[0].object) {
+                if (INTERSECTED) {
+                    INTERSECTED.material.emissive.set(INTERSECTED.currentHex);
+                }
+                INTERSECTED = intersects[0].object;
+                INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                INTERSECTED.material.emissive.set(0xff0000);
+                const selectedMeshUUID = INTERSECTED.uuid;
+                const designVar = INTERSECTED.designvar;
+                const strainEnergy = INTERSECTED.strain;
+                const displacement = INTERSECTED.displacement;
+                // Update the text box content
+                const designVarText = "Design variable: " + designVar;
+                const strainEnergyText = "Strain energy: " + strainEnergy;
+                const displacementText = "Displacement: " + displacement;
+                document.getElementById("design-var2").textContent = designVarText;
+                document.getElementById("strain-energy2").textContent = strainEnergyText;
+                document.getElementById("displacement2").textContent = displacementText;
+               
+                boxPosition.setFromMatrixPosition(INTERSECTED.matrixWorld);
+                boxPosition.project(camera);
+                var widthHalf = container.clientWidth / 2;
+                var heightHalf = container.clientHeight / 2;
+                boxPosition.x = (boxPosition.x * widthHalf) + widthHalf;
+                boxPosition.y = - (boxPosition.y * heightHalf) + heightHalf;
+
+                infoBox.style.display='block';
+            }
+        } else {
+            // Hide the text box if no mesh is clicked
+            infoBox.style.display='none';
+        }
+    }
+
+
+
+
+
 
 function render() {
     createSphere();

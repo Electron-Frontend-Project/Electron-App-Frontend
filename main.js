@@ -67,21 +67,7 @@ function createMainWindow() {
         } catch (err) {
             event.sender.send('file-read-error2', err.message);
         }
-        //if (fs.existsSync(filePath)) {
-        //    console.log("Hello World!");
-        //    // Read the contents of the MSH file
-        //    fs.readFile(filePath, 'utf-8', (err, data) => {
-        //        if (err) {
-        //            event.sender.send('file-read-error2', err.message);
-        //        } else {
-        //            // Send the data to the renderer process
-        //            event.sender.send('file-data2', data);
-        //        }
-        //    });
-        //} 
-        //else {
-        //    event.sender.send('file-not-found2', `File not found: ${filePath}`);
-        //}
+   
     });   
 
 
@@ -116,17 +102,6 @@ function createMainWindow() {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
     let server; // Declare a variable to store the server instance
     let responseData = {}; // Initialize responseData with an empty object
  
@@ -159,6 +134,24 @@ function createMainWindow() {
             startServer(); // Start the initial server instance
         }
     });
+
+    ipcMain.on('fetch-data-from-api', (event) => {
+        // Replace the following URL with your API endpoint
+        const apiUrl = 'http://localhost:8080/api/totalnodeit';
+    
+        // Make a request to the API
+        // You can use libraries like axios, fetch, or request
+        // Here, we'll use the 'axios' library as an example
+        axios.put(apiUrl)
+          .then(response => {
+            const data = response.data;
+            // Send the data back to the renderer process
+            event.reply('api-data-fetched', data);
+          })
+          .catch(error => {
+            console.error('Error fetching data from the API: ', error);
+          });
+      });
    
     function startServer() {
         server = app.listen(appPort, () => {

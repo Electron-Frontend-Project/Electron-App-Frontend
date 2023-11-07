@@ -6,12 +6,12 @@ import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/exampl
 document.addEventListener('DOMContentLoaded', () => {
     const readFile = document.getElementById('readFileDD');
     readFile.addEventListener('click', async () => {
-       const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR1.msh'; // Replace with the actual file path
-      // const filePath = 'C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit/solid31.msh';
+       //const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR1.msh'; // Replace with the actual file path
+       const filePath = 'C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit/solid31.msh';
         ipcRenderer.send('read-file1', filePath);
     });
 });
-
+var i=0;
 // to get dx
 let dx;
 ipcRenderer.on('get-dxD', (event, data) => {    
@@ -34,7 +34,7 @@ ipcRenderer.on('file-data1', (event, data) => {
     if (dx) {
     console.log('dx1:',dx);
     }
-    console.log(lines);
+    console.log(lines[0]);
     // Create a scene, camera, and renderer
     const scene = new THREE.Scene();  
     const scene2 = new THREE.Scene();
@@ -50,9 +50,9 @@ ipcRenderer.on('file-data1', (event, data) => {
     const width2 = container2.clientWidth;
     const height2 = container2.clientHeight;
 
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); 
-    const camera2 = new THREE.PerspectiveCamera(75, width2 / height2, 0.1, 1000); 
     const CAM_DISTANCE = 10;
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); 
+    const camera2 = new THREE.PerspectiveCamera(75, width2 / height2, 0.1, 1000);    
     const renderer = new THREE.WebGLRenderer(); 
     const renderer2 = new THREE.WebGLRenderer(); 
     // Set the renderer's size to match the container
@@ -68,16 +68,13 @@ ipcRenderer.on('file-data1', (event, data) => {
     const axesHelper = new THREE.AxesHelper( 5 );
     scene2.add( axesHelper );
 
+    // group of spheres to clickable
+    const spheres = [];
+    
     let currentAxis = 'none';
 
-    document.onclick = hideMenu;
-    document.oncontextmenu = rightClick;
-      
-    function hideMenu() {
-        document.getElementById("contextMenuD")
-                .style.display = "none"
-    }
-  
+    
+
     function rightClick(e) {
         e.preventDefault();  
         if (document.getElementById("contextMenuD")
@@ -131,18 +128,23 @@ ipcRenderer.on('file-data1', (event, data) => {
     const widthSegments = 32; // Surface parts of the sphere
     const heightSegments = 32; // Height divisions of the sphere
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-    const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+    const defaultMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
     
 
     // SPHERE
     lines.forEach(line => {
         const values = line.split('\t'); // tab separated
-        if (values.length === 3) {
+        if (values.length === 8) {
             const x = parseFloat(values[0]);
             const y = parseFloat(values[1]);
             const z = parseFloat(values[2]);
+            const strain = parseFloat(values[3]);
+            const designvar = values[4];
+            const dispx = parseFloat(values[5]);
+            const dispy = parseFloat(values[6]);
+            const dispz = parseFloat(values[7]);
         
-            const sphere = new THREE.Mesh(geometry, material);
+            const sphere = new THREE.Mesh(geometry, defaultMaterial.clone());
            
             switch (currentAxis) {
                 case 'x':
@@ -158,12 +160,77 @@ ipcRenderer.on('file-data1', (event, data) => {
                     sphere.position.set(x, y, z);
                     break;
             }          
-              
-            scene.add(sphere);         
+           
+            scene.add(sphere); 
+            sphere.designvar = designvar;
+            sphere.displacement = dispx + " " + dispy + " " + dispz;
+            sphere.strain = strain;
+            spheres.push(sphere);        
         }
     });
     geometry.dispose();
-    camera.position.z = 50;
+    camera.position.z = 30;
+
+    var clickedMesh = null;
+
+    var infoBox = document.getElementById("info-box1"); // text box for mesh info
+    const canvas = document.querySelector('canvas');
+    const boxPosition = new THREE.Vector3();
+
+    renderer.domElement.addEventListener('click', onCanvasClick, false);
+    var INTERSECTED;
+
+    function onCanvasClick(event) {
+        // Calculate the mouse click position in normalized device coordinates (NDC)
+        var mouse = new THREE.Vector2();
+        const containerRect = container.getBoundingClientRect();
+        const x = ((event.clientX - containerRect.left) / container.clientWidth) * 2 - 1;
+        const y = -((event.clientY - containerRect.top) / container.clientHeight) * 2 + 1;
+
+        // Raycasting is used to determine which object was clicked
+        var raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera({ x, y }, camera);
+        raycaster.params.Points.threshold = 0.001; // Adjust the threshold as needed
+
+
+        var intersects = raycaster.intersectObjects(spheres, true);
+
+        if (intersects.length > 0) {
+            if (INTERSECTED != intersects[0].object) {
+                if (INTERSECTED) {
+                    INTERSECTED.material.emissive.set(INTERSECTED.currentHex);
+                }
+                INTERSECTED = intersects[0].object;
+                INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                INTERSECTED.material.emissive.set(0xff0000);
+                const selectedMeshUUID = INTERSECTED.uuid;
+                const designVar = INTERSECTED.designvar;
+                const strainEnergy = INTERSECTED.strain;
+                const displacement = INTERSECTED.displacement;
+                // Update the text box content
+                const designVarText = "Design variable: " + designVar;
+                const strainEnergyText = "Strain energy: " + strainEnergy;
+                const displacementText = "Displacement: " + displacement;
+                document.getElementById("design-var1").textContent = designVarText;
+                document.getElementById("strain-energy1").textContent = strainEnergyText;
+                document.getElementById("displacement1").textContent = displacementText;
+               
+                boxPosition.setFromMatrixPosition(INTERSECTED.matrixWorld);
+                boxPosition.project(camera);
+                var widthHalf = container.clientWidth / 2;
+                var heightHalf = container.clientHeight / 2;
+                boxPosition.x = (boxPosition.x * widthHalf) + widthHalf;
+                boxPosition.y = - (boxPosition.y * heightHalf) + heightHalf;
+
+                infoBox.style.display='block';
+            }
+        } else {
+            // Hide the text box if no mesh is clicked
+            infoBox.style.display='none';
+        }
+    }
+    
+    
 
     const animate = () => {
         
@@ -178,33 +245,19 @@ ipcRenderer.on('file-data1', (event, data) => {
         camera2.position.sub(controls.target);
         camera2.position.setLength(CAM_DISTANCE);
         camera2.lookAt(scene2.position);
-        
-        // Render both scenes with their respective cameras and renderers
-        renderer.render(scene, camera);
-        renderer2.render(scene2, camera2);
-        };
+    
+        render();
+    };
         
     animate();  
+
+    function render() {
+        renderer.render(scene, camera);
+        renderer2.render(scene2, camera2);
+    }
+
     renderer.dispose();
     renderer2.dispose(); 
     
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
