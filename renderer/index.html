@@ -26,7 +26,9 @@
                 <button type="button">Material Properties</button>
               </li>
               <li>
-                <button type="button">Boundary Conditions</button>
+                <script src="js/rendererBC.js" type="module"></script>
+                <button id="boundary" >Boundary Conditions</button>
+                  
               </li>
             </ul>
           </div>
@@ -118,9 +120,73 @@
       </ul>
     </nav>
 
+    <!-- Dialog window for Boundary Condition parameters-->
+    <dialog id="force-bc">This is a dialog window
+      <button id="force">Apply Force</button>
+      <div class="modal1">
+        <div class="modal-header1">
+          <span class="close-btn1">&times;</span>
+          <h1>Force</h1>
+        </div>
+        <div class="modal-content1">
+          <p>1. Select points: </p>
+          <div id="list-container1"></div>
+          <button id="forcepointadd">Add</button>
+          <button id="forcepointSub">Submit</button>
+        </div>
+        <div class="modal-content1">
+          <p>2. Force Component: </p>
+          <ul>
+            <li>
+              <label> x </label>
+              <input type="number">
+            </li>
+            <li>
+              <label> y </label>
+              <input type="number">
+            </li>
+            <li>
+              <label> z </label>
+              <input type="number">
+            </li>
+            <button id="forceFSubmit">Submit</button>
+          </ul>
+        </div>
+      </div>
+
+      <button id="bc">Apply BC</button>
+      <div class="modal2">
+        <div class="modal-header2">
+          <span class="close-btn2">&times;</span>
+          <h1>BC</h1>
+        </div>
+        <div class="modal-content2">
+          <p>1. Select points: </p>
+          <div id="list-container2"></div>
+          <button id="bcpointadd"> Add </button>
+          <button id="bcpointSub"> Submit </button>
+        </div>
+        <div class="modal-content2">
+          <p>2. Constraint Component: </p>
+          <ul>
+            <li>
+              <button> x </button>
+            </li>
+            <li>
+              <button> y </button>
+            </li>
+            <li>
+              <button> z </button>
+            </li>
+            <button id="bcFSubmit"> Submit </button>
+          </ul>
+        </div>
+      </div>
+      <button id="closeDialog">Close</button>
+    </dialog>
+
     <div class="main-part">
       <div class="design-part" id="scene-container1">
-
         <div id="info-box1" class="info-box1">
           <p id="design-var1"></p>
           <p id="strain-energy1"></p>
