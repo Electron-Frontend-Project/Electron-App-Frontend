@@ -11,6 +11,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 const isMac = process.platform === 'darwin';
 
 let mainWindow;
+let popupWindow;
 
 function createMainWindow() {
     const mainWindow = new BrowserWindow({      //creating main window
@@ -66,11 +67,8 @@ function createMainWindow() {
             }
         } catch (err) {
             event.sender.send('file-read-error2', err.message);
-        }
-   
+        }   
     });   
-
-
 
     async function readAndSortFiles(dirPath) {
         return new Promise((resolve, reject) => {
@@ -100,7 +98,6 @@ function createMainWindow() {
             });
         });
     }
-
 
     let server; // Declare a variable to store the server instance
     let responseData = {}; // Initialize responseData with an empty object
@@ -136,22 +133,19 @@ function createMainWindow() {
     });
 
     ipcMain.on('fetch-data-from-api', (event) => {
-        // Replace the following URL with your API endpoint
+        // API endpoint
         const apiUrl = 'http://localhost:8080/api/totalnodeit';
     
-        // Make a request to the API
-        // You can use libraries like axios, fetch, or request
-        // Here, we'll use the 'axios' library as an example
         axios.put(apiUrl)
           .then(response => {
             const data = response.data;
             // Send the data back to the renderer process
             event.reply('api-data-fetched', data);
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.error('Error fetching data from the API: ', error);
-          });
-      });
+        });
+    });
    
     function startServer() {
         server = app.listen(appPort, () => {
@@ -176,6 +170,25 @@ function createMainWindow() {
         serverProcess.on('close', (code) => {
             console.log(`Server Process exited with code ${code}`);
         });
+    });
+
+    // send BC parameters to backend
+    ipcMain.on('send-BCparams', async (event, data) =>{
+        console.log(data);
+        responseData = data;    
+        app.get('/api/bcparam', (req, res) => {
+            res.json(responseData); // Send the updated data in the response
+        });
+        // Close the previous server instance if it exists
+        if (server) {
+            server.close(() => {
+                console.log('Previous server instance closed.');
+                startServer(); // Start a new server instance
+            });
+        } else {
+            startServer(); // Start the initial server instance
+        }
+       
     });
 }
 
@@ -227,7 +240,6 @@ app.whenReady().then(() => {     //when the app is ready, creates the main func
             label: 'Help'
         }
     ]
-
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
 
@@ -238,7 +250,7 @@ app.whenReady().then(() => {     //when the app is ready, creates the main func
     });    
 });
 
-app.on('window-all-closed', () => {     //makes it cross platform so that it works on all OS.
+app.on('window-all-closed', () => {     // makes it cross platform so that it works on all OS.
     if (!isMac) {
         app.quit()
     }
