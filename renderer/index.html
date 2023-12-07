@@ -16,6 +16,7 @@
  
   </head>
   <body>
+    
     <nav class="sidebar">
       <ul>
         <li>
@@ -129,13 +130,21 @@
           <h1>Force</h1>
         </div>
         <div class="modal-content1">
-          <p>1. Select points: </p>
+          <p>1. Select area: </p>
           <div id="list-container1"></div>
+          <button id="forceareaadd">Pick area</button>
+          <button id="clearselectedsphere">Clear</button>
+          <button id="forceareaSub">Submit</button>
+         
+        </div>
+        <div class="modal-content1">
+          <p>2. Select points: </p>
+          <div id="list-container2"></div>
           <button id="forcepointadd">Add</button>
           <button id="forcepointSub">Submit</button>
         </div>
         <div class="modal-content1">
-          <p>2. Force Component: </p>
+          <p>3. Force Component: </p>
           <ul>
             <li>
               <label> x </label>
@@ -163,7 +172,7 @@
         </div>
         <div class="modal-content2">
           <p>1. Select points: </p>
-          <div id="list-container2"></div>
+          <div id="list-container3"></div>
           <button id="bcpointadd"> Add </button>
           <button id="bcpointSub"> Submit </button>
         </div>
@@ -188,14 +197,16 @@
       <button id="closeDialog">Close</button>
     </dialog>
 
-    <div class="main-part">
+    
+    <div class="main-part" id="main-part">
       <div class="design-part" id="scene-container1">
+        
         <div id="info-box1" class="info-box1">
           <p id="design-var1"></p>
           <p id="strain-energy1"></p>
           <p id="displacement1"></p>
         </div>
-        
+      
         <button  id="readFileDD">Read File</button>
         <script type="module" src="js/rendererD.js" ></script>  
         <script type="module" src="js/renderernode.js" ></script>
@@ -235,6 +246,8 @@
         </div>
       </div>
     </div>
+    
+    <div id="sel_box"></div>
 
     <div class="bottom-part">
       <script type="module" src="js/renderernode.js" ></script>   

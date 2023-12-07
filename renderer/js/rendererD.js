@@ -2,12 +2,14 @@ const { ipcRenderer } = require('electron');
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js";
+import { SelectionBox } from "./SelectionBox.js";
+import { SelectionHelper } from "./SelectionHelper.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     const readFile = document.getElementById('readFileDD');
     readFile.addEventListener('click', async () => {
        //const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR1.msh'; // Replace with the actual file path
-       const filePath = 'C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit/solid31.msh';
+       const filePath = 'C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit/solid1.msh';
         ipcRenderer.send('read-file1', filePath);
     });
 });
@@ -49,10 +51,27 @@ ipcRenderer.on('file-data1', (event, data) => {
     const height = container.clientHeight;
     const width2 = container2.clientWidth;
     const height2 = container2.clientHeight;
-
     const CAM_DISTANCE = 10;
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); 
-    const camera2 = new THREE.PerspectiveCamera(75, width2 / height2, 0.1, 1000);    
+    const camera = new THREE.OrthographicCamera(
+        width / -2,
+        width / 2,
+        height / 2,
+        height / -2,
+        0.1,
+        50
+    );	
+    camera.zoom = 10;
+	camera.updateProjectionMatrix();
+    const camera2 = new THREE.OrthographicCamera(
+        width2 / -2,
+        width2 / 2,
+        height2 / 2,
+        height2 / -2,
+        0.1,
+        50
+    ); 
+    camera2.zoom = 10;
+	camera2.updateProjectionMatrix();
     const renderer = new THREE.WebGLRenderer(); 
     const renderer2 = new THREE.WebGLRenderer(); 
     // Set the renderer's size to match the container
@@ -70,10 +89,9 @@ ipcRenderer.on('file-data1', (event, data) => {
 
     // group of spheres to clickable
     const spheres = [];
-    
-    let currentAxis = 'none';
+    const facesPlanes = [];
 
-    
+    let currentAxis = 'none';
 
     function rightClick(e) {
         e.preventDefault();  
@@ -121,7 +139,7 @@ ipcRenderer.on('file-data1', (event, data) => {
 
     // Add a directional light to the scene
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // White light, 50% intensity
-    directionalLight.position.set(1, 1, 1); // Set the direction of the light
+    directionalLight.position.set(10, 10, 10); // Set the direction of the light
     scene.add(directionalLight);
 
     const radius = dx/2; // Radius of spheres
@@ -130,7 +148,6 @@ ipcRenderer.on('file-data1', (event, data) => {
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
     const defaultMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
     
-
     // SPHERE
     lines.forEach(line => {
         const values = line.split('\t'); // tab separated
@@ -165,18 +182,99 @@ ipcRenderer.on('file-data1', (event, data) => {
             sphere.designvar = designvar;
             sphere.displacement = dispx + " " + dispy + " " + dispz;
             sphere.strain = strain;
-            spheres.push(sphere);        
+            spheres.push(sphere);     
+                      
+        }        
+    });
+
+//  ** Select Box **
+    var selectedMeshes = [];
+    let isOrbitControlEnabled = true;
+    document.getElementById('forceareaadd').addEventListener('click', onPickAreaClick, false);
+
+    function onPickAreaClick() {
+        isOrbitControlEnabled = !isOrbitControlEnabled;
+        controls.enabled = isOrbitControlEnabled;
+    }
+
+    document.getElementById('clearselectedsphere').addEventListener('click', clearSelectedSpheres, false);
+    // Function to clear selected spheres
+    function clearSelectedSpheres() {
+        // Iterate through selectedMeshes and reset their colors
+        selectedMeshes.forEach((sphere) => {
+            sphere.material.color.set(0x00ff00);
+        });
+        // Clear the selectedMeshes array
+        selectedMeshes = [];
+        console.log("selected meshes after clear: " + selectedMeshes);
+    }
+
+    const selectionBox = new SelectionBox(camera, scene);
+    const helper = new SelectionHelper(renderer, 'sel_box');
+    const designPart = document.querySelector('.design-part');
+
+    document.addEventListener('pointerdown', function (event) {
+        if (!isOrbitControlEnabled) {
+            for (const item of selectionBox.collection) {
+                item.material.color.set(0xff0000);
+            }
+            const designPartRect = designPart.getBoundingClientRect();
+            selectionBox.startPoint.set(
+                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
+                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
+                0.5
+            );
         }
     });
+    document.addEventListener('pointermove', function (event) {
+        if (!isOrbitControlEnabled && helper.isDown) {
+            for (let i = 0; i < selectionBox.collection.length; i++) {
+                selectionBox.collection[i].material.color.set(0xff0000);
+            }
+            const designPartRect = designPart.getBoundingClientRect();
+            selectionBox.endPoint.set(
+                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
+                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
+                0.5
+            );
+            const allSelected = selectionBox.select();
+            for (let i = 0; i < allSelected.length; i++) {
+                const selectedSphere = allSelected[i];
+                selectedSphere.material.color.set(0xff0000);
+                selectedMeshes.push(selectedSphere);
+            }        
+        }
+    });
+
+    document.addEventListener('pointerup', function (event) {
+        if (!isOrbitControlEnabled) {
+            const designPartRect = designPart.getBoundingClientRect();
+            selectionBox.endPoint.set(
+                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
+                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
+                0.5
+            );
+            const allSelected = selectionBox.select();
+            for (let i = 0; i < allSelected.length; i++) {
+                const selectedSphere = allSelected[i];
+                selectedSphere.material.color.set(0xff0000);
+                selectedMeshes.push(selectedSphere.designvar);
+             //   console.log("selected meshes: " + selectedSphere.designvar);
+            }
+        }
+        selectedMeshes.forEach(sphere => {
+            console.log(sphere.designvar);
+        });
+    });
+
     geometry.dispose();
     camera.position.z = 30;
 
+//  ** Clickable Meshes **
     var clickedMesh = null;
-
     var infoBox = document.getElementById("info-box1"); // text box for mesh info
     const canvas = document.querySelector('canvas');
     const boxPosition = new THREE.Vector3();
-
     renderer.domElement.addEventListener('click', onCanvasClick, false);
     var INTERSECTED;
 
@@ -191,10 +289,7 @@ ipcRenderer.on('file-data1', (event, data) => {
         var raycaster = new THREE.Raycaster();
         raycaster.setFromCamera({ x, y }, camera);
         raycaster.params.Points.threshold = 0.001; // Adjust the threshold as needed
-
-
         var intersects = raycaster.intersectObjects(spheres, true);
-
         if (intersects.length > 0) {
             if (INTERSECTED != intersects[0].object) {
                 if (INTERSECTED) {
@@ -229,23 +324,16 @@ ipcRenderer.on('file-data1', (event, data) => {
             infoBox.style.display='none';
         }
     }
-    
-    
-
-    const animate = () => {
-        
+    const animate = () => {        
         requestAnimationFrame(animate);
-
         // Update controls for both cameras
         controls.update();
-        controls2.update();
-        
+        controls2.update();       
         // Update the position and target of camera2 based on camera1
         camera2.position.copy(camera.position);
         camera2.position.sub(controls.target);
         camera2.position.setLength(CAM_DISTANCE);
         camera2.lookAt(scene2.position);
-    
         render();
     };
         
@@ -257,7 +345,6 @@ ipcRenderer.on('file-data1', (event, data) => {
     }
 
     renderer.dispose();
-    renderer2.dispose(); 
-    
+    renderer2.dispose();    
 });
 
