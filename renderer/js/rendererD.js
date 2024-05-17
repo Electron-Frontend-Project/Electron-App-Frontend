@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     readFile.addEventListener('click', async () => {
        //const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR1.msh'; // Replace with the actual file path
        const filePath = 'C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit/solid1.msh';
+     // const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solid1.msh';
         ipcRenderer.send('read-file1', filePath);
     });
 });
@@ -46,6 +47,7 @@ ipcRenderer.on('file-data1', (event, data) => {
     // Get the container element by its class name
     const container = document.querySelector('.design-part');   
     const container2 = document.querySelector('.corner-boxD');
+  
     // Create a camera with appropriate aspect ratio and size
     const width = container.clientWidth;
     const height = container.clientHeight;
@@ -190,7 +192,8 @@ ipcRenderer.on('file-data1', (event, data) => {
 //  ** Select Box **
     var selectedMeshes = [];
     let isOrbitControlEnabled = true;
-    document.getElementById('forceareaadd').addEventListener('click', onPickAreaClick, false);
+   // document.getElementById('forceareaadd').addEventListener('click', onPickAreaClick, false);
+    document.getElementById('bcareaadd').addEventListener('click', onPickAreaClick, false);
 
     function onPickAreaClick() {
         isOrbitControlEnabled = !isOrbitControlEnabled;
@@ -202,7 +205,11 @@ ipcRenderer.on('file-data1', (event, data) => {
     function clearSelectedSpheres() {
         // Iterate through selectedMeshes and reset their colors
         selectedMeshes.forEach((sphere) => {
-            sphere.material.color.set(0x00ff00);
+            if (sphere.material && sphere.material.emissive) {
+                sphere.material.color.set(0x00ff00);
+            } else {
+              //  console.error("Material or emissive property is undefined for the sphere:", sphere);
+            }
         });
         // Clear the selectedMeshes array
         selectedMeshes = [];
@@ -262,10 +269,22 @@ ipcRenderer.on('file-data1', (event, data) => {
              //   console.log("selected meshes: " + selectedSphere.designvar);
             }
         }
-        selectedMeshes.forEach(sphere => {
-            console.log(sphere.designvar);
-        });
+      //  selectedMeshes.forEach(sphere => {
+      //     console.log(sphere.designvar);
+      // });
     });
+
+// ** Send selectedMeshes list to HTML ** 
+    document.getElementById('bcareaSub').addEventListener('click', function() {
+        sendDesignVarInfo(selectedMeshes);
+    });
+    function sendDesignVarInfo(meshes) {
+        const designVarList = meshes.map(mesh => mesh.designvar).join('<br>');
+        document.getElementById('list').innerHTML = designVarList;
+    }
+
+
+
 
     geometry.dispose();
     camera.position.z = 30;

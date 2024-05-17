@@ -11,10 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn1 = document.querySelector(".close-btn1")
     const closeBtn2 = document.querySelector(".close-btn2")
     const closeDialogButton = document.getElementById('closeDialog'); // close dialog
-  // const forcepointadd = document.getElementById('forcepointadd'); // add button force
-  // const bcpointadd = document.getElementById('bcpointadd'); // add button for bc
-    var fdictionarysend = {};
-    var bdictionarysend = {};
+    var fListsend = [];
     const forceSend = document.getElementById('forceSend');
     const bcSend = document.getElementById('bcSend');
     var forceDict = {};
@@ -22,8 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var forceDictsend = {};
     var bcDictsend = {};
     var forcesend = {};
-    var bcsend = {};
-
+    const f = {};
       
     boundaryButton.addEventListener('click', async () => {
         console.log("Clicked boundary con button!!");
@@ -46,72 +42,47 @@ document.addEventListener('DOMContentLoaded', () => {
         forcebc.close();
     });
     
-    function addButtonClickListener(buttonId, designVarId, strainId, displacementId, listContainerId, dictionary, dictsend, pointSubmit) {
-        const button = document.getElementById(buttonId);
+//  to get selected point ids from Force
+    function pointClickListener(buttonID, designVarId, listContainerId, list, pointSubmit){
+        const button = document.getElementById(buttonID);
         const pointSub = document.getElementById(pointSubmit);
-           
         button.addEventListener('click', async () => {
             const designvar = document.getElementById(designVarId).innerHTML;
-            const strain = document.getElementById(strainId).innerHTML;
-            const disp = document.getElementById(displacementId).innerHTML;
-    
             const dArray = designvar.split(" ");
-            const sArray = strain.split(" ");
-            const disArray = disp.split(" ");
-    
-            const dValue = dArray[2];
-            const sValue = sArray[2];
-            const disValue = disArray.slice(1, 4);
-    
-            if (dValue != null && !dictionary.hasOwnProperty(dValue)) {
-                dictionary[dValue] = {
-                    strain: sValue,
-                    displacement: disValue
-                };
-                updateList(listContainerId, dictionary); // Update the displayed list
-                if (buttonId == 'forcepointadd'){
-                    fdictionarysend = dictionary;
-                }else {
-                    bdictionarysend = dictionary;
-                }                
+            const dValue = dArray[2];  
+            if (dValue != null && !list.includes(dValue)) {
+                list.push(dValue);
+
+                updateList(listContainerId, list); // Update the displayed list
+                if (buttonID == 'forcepointadd'){
+                    fListsend = list;
+                }
             }
-            console.log('send ', fdictionarysend);       
-            
-            pointSub.addEventListener('click', async () => {
-                if (pointSubmit == 'forcepointSub'){
-                    forcesend = fdictionarysend;
-                }else {
-                    bcsend = bdictionarysend;
-                }    
-                console.log('bsend: ',bcsend);
-                console.log('fsend: ', forcesend);
-            }); 
-        });   
+            console.log('send ', fListsend);                   
+            pointSub.addEventListener('click', async () => {                
+                forcesend = fListsend;                
+            });
+        });
+        console.log('fsend: ', forcesend);
     }
-    
-    function updateList(listContainerId, dictionary) {
-        const listContainer = document.getElementById(listContainerId);
-    
+
+    function updateList(listContainerId, list) {
+        const listContainer = document.getElementById(listContainerId);    
         // Clear existing list
-        listContainer.innerHTML = "";
-    
-        // Create a list of keys and remove buttons
-        for (const key in dictionary) {
-            if (dictionary.hasOwnProperty(key)) {
-                const listItem = document.createElement("li");
-                listItem.textContent = key;
-    
-                const removeButton = document.createElement("button");
-                removeButton.textContent = "Remove";
-                removeButton.addEventListener("click", () => {
-                    // Remove the element from the dictionary
-                    delete dictionary[key];
-                    updateList(listContainerId, dictionary); // Update the displayed list
-                });
-    
-                listItem.appendChild(removeButton);
-                listContainer.appendChild(listItem);
-            }
+        listContainer.innerHTML = "";    
+        // Create a list of elems and remove buttons
+        for (const elem in list) {           
+            const listItem = document.createElement("li");
+            listItem.textContent = list[elem];
+            const removeButton = document.createElement("button");
+            removeButton.textContent = "Remove";
+            removeButton.addEventListener("click", () => {
+                // Remove the element from the list
+                delete list[elem];
+                updateList(listContainerId, list); // Update the displayed list
+            });
+            listItem.appendChild(removeButton);
+            listContainer.appendChild(listItem);    
         }
     }
 
@@ -129,17 +100,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 y: parseFloat(yComponent) || 0,
                 z: parseFloat(zComponent) || 0,
             };
-            console.log("xcom: ", forceComponents);
-            
+            console.log("xcom: ", forceComponents);            
             forceDictsend = forceComponents
-            updateList('list-container1', forceDict);
-
+          //  updateList('list-container1', forceDict);
             // send forceDictsend for components
         });
     }
 
-    function addBCComponentListener(addButtonId, submitButtonId, bcDict, bcdictsend) {
-        const addButton = document.getElementById(addButtonId);
+    function addBCComponentListener(submitButtonId, bcDict) {       
         const submitButton = document.getElementById(submitButtonId);
 
         let xCom = false;
@@ -163,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             zCom = !zCom;
         });
 
-        addButton.addEventListener('click', () => {
+        submitButton.addEventListener('click', () => {
             const bcComponents = {
                 x: xCom,
                 y: yCom,
@@ -173,45 +141,49 @@ document.addEventListener('DOMContentLoaded', () => {
             bcDictsend = bcComponents;
             updateList('list-container2', bcDict);
             console.log('bcComp: ', bcComponents);
-
             // send bcDictsend 
         });
     }
 
-    // for design domain part: design-var1, strain-energy1, displacement1
-    addButtonClickListener('forcepointadd', 'design-var1', 'strain-energy1', 'displacement1', 'list-container1', forceDict, forceDictsend, 'forcepointSub');
-    addButtonClickListener('bcpointadd', 'design-var1', 'strain-energy1', 'displacement1', 'list-container2', bcDict, bcDictsend, 'bcpointSub');
+    // for design domain part: design-var1
+    pointClickListener('forcepointadd', 'design-var1', 'list-container1', fListsend, 'forcepointSub')
     
     // Add listeners for force and bc component submissions
     addForceComponentListener('forceFSubmit', forceDict);
-    addBCComponentListener('bccomadd','bcFSubmit', bcDict);
+    addBCComponentListener('bcFSubmit', bcDict);
 
     forceSend.addEventListener('click', async () => {
-        const f = {bc: 'force'};
-        f['points'] = fdictionarysend;
-        f['components'] = forceDictsend; 
-      
-        console.log('BC: ', f['bc']);
+        
+        f['points'] = fListsend;
+        f['forcecomponents'] = forceDictsend;     
+        if (fListsend && fListsend.length > 0) {
+            f['points'] = fListsend.filter(point => point !== null);
+        }
         console.log('points:  ', f['points']);
-        console.log('componenets: ', f['components']);
+        console.log('forcecomponents: ', f['forcecomponents']);
         console.log(f);
-        const data = f;
-
-        ipcRenderer.send('send-BCparams', f);
-
     });
 
     bcSend.addEventListener('click', async () => {
-        const b = {bc: 'bc'};
-        b['points'] = bdictionarysend;
-        b['components'] = bcDictsend; 
-        console.log('BC: ', b['bc']);
-        console.log('points:  ', b['points']);
-        console.log('componenets: ', b['components'])
-        console.log(b);
-        ipcRenderer.send('send-BCparams', b);
-
+        handleSendButtonClick();
+        const designVarList = handleSendButtonClick();
+        f['constcomponents'] = bcDictsend; 
+        f['designVars'] = designVarList; 
+        console.log('components: ', f['components']);
+        console.log('Design Vars: ', f['designVars']);
+        console.log(f);
+        ipcRenderer.send('send-BCparams', f);
     });
+
+//  to get sphere ids in selected area
+    function handleSendButtonClick() {
+        const listElementHTML = document.getElementById('list').innerHTML;    
+        const designVarList = listElementHTML.split('<br>');    
+        const nonEmptyDesignVarList = designVarList.map(item => item.trim()).filter(item => item !== ''); // '' none element   
+        const uniqueDesignVarSet = new Set(nonEmptyDesignVarList);
+        const uniqueDesignVarList = Array.from(uniqueDesignVarSet);
+        return uniqueDesignVarList.length > 0 ? uniqueDesignVarList : [];    
+    }    
 });
 
 

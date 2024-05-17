@@ -7,9 +7,25 @@
   "scripts": {
     "start": "electron ."
   },
-  "author": "Helin Varoğlu",
+  "author": "Helin Varoğlu, Rozerin YILDIZ",
   "license": "MIT",
   "dependencies": {
-    "electron": "^25.3.2"
+    "axios": "^1.5.0",
+    "chokidar": "^3.5.3",
+    "electron": "^26.2.0",
+    "express": "^4.18.2",
+    "three": "^0.156.1",
+    "three-iges-loader": "^1.2.0",
+    "three-orbitcontrols": "^2.110.3"
+  },
+  "keywords": [],
+  "devDependencies": {
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10"
+  },
+  "build": {
+    "extraFiles": [
+      "C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/pdtopolys/fea/target/demo1-0.0.1-SNAPSHOT.jar"
+    ]
   }
 }

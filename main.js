@@ -7,11 +7,15 @@ var http = require('http');
 const fs = require('fs');
 const { spawn } = require('child_process');
 
+
+
+
 const isDev = process.env.NODE_ENV !== 'production';
 const isMac = process.platform === 'darwin';
 
+
+
 let mainWindow;
-let popupWindow;
 
 function createMainWindow() {
     const mainWindow = new BrowserWindow({      //creating main window
@@ -55,52 +59,103 @@ function createMainWindow() {
             event.sender.send('file-not-found1', `File not found: ${filePath}`);
         }
     }); 
-    //  to read .msh file
-    ipcMain.on('read-file2', async (event, dirPath) => {
+
+
+
+
+    const chokidar = require('chokidar'); // to watch the directory
+    ipcMain.on('read-file2', (event, dirPath) => {
         try {
-            const files = await readAndSortFiles(dirPath);
-            for (const name of files) {
-                const filePath = path.join(dirPath, name);
-                console.log("Reading file:", name);
-                const data = await readFileAsync(filePath);
-                event.sender.send('file-data2', { name, content: data });
-            }
+            watchDirectory(event, dirPath);
         } catch (err) {
             event.sender.send('file-read-error2', err.message);
-        }   
-    });   
-
-    async function readAndSortFiles(dirPath) {
-        return new Promise((resolve, reject) => {
-            fs.readdir(dirPath, (err, files) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    files.sort((a, b) => {
-                        const aNumber = parseInt(a.match(/\d+/)[0]);
-                        const bNumber = parseInt(b.match(/\d+/)[0]);
-                        return aNumber - bNumber;
-                    });
-                    resolve(files);
+        }
+    });
+    
+    function watchDirectory(event, dirPath) {
+        const watcher = chokidar.watch(dirPath, {
+            ignored: /(^|[\/\\])\../, // Dot files ignore
+            persistent: true,
+        });
+    
+        console.log(`Listening was started: ${dirPath}`);
+    
+        const handleFileAdded = (filePath) => {
+            // Introduce a delay before attempting to read the file
+            setTimeout(async () => {
+                try {
+                    console.log("Reading file:", filePath);
+                    const data = await readFileAsync(filePath);
+                    event.sender.send('file-data2', { name: path.basename(filePath), content: data });
+                } catch (err) {
+                    event.sender.send('file-read-error2', err.message);
                 }
-            });
+            }, 1000); // Adjust the delay duration (1 sec = 1000 millisec)
+        };
+    
+        // Listener
+        watcher.on('add', handleFileAdded);
+    
+        watcher.on('ready', () => {
+            console.log('Listening started. Waiting...');
         });
     }
     
     async function readFileAsync(filePath) {
-        return new Promise((resolve, reject) => {
-            fs.readFile(filePath, 'utf-8', (err, data) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(data);
-                }
-            });
-        });
+        try {
+            const data = await fs.promises.readFile(filePath, 'utf-8');
+            return data;
+        } catch (err) {
+            throw err;
+        }
     }
+
+    ////  to read .msh file
+    //ipcMain.on('read-file2', async (event, dirPath) => {
+    //    try {
+    //        const files = await readAndSortFiles(dirPath);
+    //        for (const name of files) {
+    //            const filePath = path.join(dirPath, name);
+    //            console.log("Reading file:", name);
+    //            const data = await readFileAsync(filePath);
+    //            event.sender.send('file-data2', { name, content: data });
+    //        }
+    //    } catch (err) {
+    //        event.sender.send('file-read-error2', err.message);
+    //    }   
+    //});  
+    //async function readAndSortFiles(dirPath) {
+    //    return new Promise((resolve, reject) => {
+    //        fs.readdir(dirPath, (err, files) => {
+    //            if (err) {
+    //                reject(err);
+    //            } else {
+    //                files.sort((a, b) => {
+    //                    const aNumber = parseInt(a.match(/\d+/)[0]);
+    //                    const bNumber = parseInt(b.match(/\d+/)[0]);
+    //                    return aNumber - bNumber;
+    //                });
+    //                resolve(files);
+    //            }
+    //        });
+    //    });
+    //}
+   
+    //async function readFileAsync(filePath) {
+    //    return new Promise((resolve, reject) => {
+    //        fs.readFile(filePath, 'utf-8', (err, data) => {
+    //            if (err) {
+    //                reject(err);
+    //            } else {
+    //                resolve(data);
+    //            }
+    //        });
+    //    });
+    //}
 
     let server; // Declare a variable to store the server instance
     let responseData = {}; // Initialize responseData with an empty object
+    let bcresponseData = {};
  
     // to send dx for radius
     ipcMain.on('send-dxD', (event, data) => {
@@ -175,9 +230,9 @@ function createMainWindow() {
     // send BC parameters to backend
     ipcMain.on('send-BCparams', async (event, data) =>{
         console.log(data);
-        responseData = data;    
+        bcresponseData = data;    
         app.get('/api/bcparam', (req, res) => {
-            res.json(responseData); // Send the updated data in the response
+            res.json(bcresponseData); // Send the updated data in the response
         });
         // Close the previous server instance if it exists
         if (server) {
@@ -208,8 +263,7 @@ app.whenReady().then(() => {     //when the app is ready, creates the main func
                             filters: [
                                 { name: 'All Files', extensions: ['*'] }
                             ]
-                        });
-                        
+                        });                        
                         // Handle selected file(s)
                         if (files && files.length > 0) {
                             const filePath = files[0]; // Use the first selected file

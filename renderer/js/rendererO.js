@@ -3,6 +3,9 @@ const { ipcRenderer } = require('electron');
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js";
 
+import { SelectionBox } from "./SelectionBox.js";
+import { SelectionHelper } from "./SelectionHelper.js";
+
 document.addEventListener('DOMContentLoaded', () => {
     const readFile = document.getElementById('readFileO');
     const dxInput = document.getElementById('dxInput');
@@ -66,6 +69,11 @@ function init() {
     renderer.setClearColor( 0x000000, 0 ); // background color
     renderer2.setClearColor( 0x000000, 0 ); // backgorund color
     // Set the renderer's size to match the container
+
+
+   
+
+
 
   
 
@@ -162,6 +170,7 @@ function init() {
    
         // Handle the received data here in the renderer process
         lines = data.split('\n');
+        console.log("lines size: "+ lines.length );
         if (dx) {
         console.log('dx1:',dx);
         }
@@ -295,10 +304,6 @@ renderer.domElement.addEventListener('click', onCanvasClick, false);
             infoBox.style.display='none';
         }
     }
-
-
-
-
 
 
 function render() {
