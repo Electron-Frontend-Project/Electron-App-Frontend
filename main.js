@@ -210,7 +210,7 @@ function createMainWindow() {
     // play button java -jar file.jar   
     var ps = require("child_process");
     ipcMain.on('start-backend', async (event, jardir) =>{
-        let server = jardir + 'demo1-0.0.1-SNAPSHOT.jar';
+        let server = jardir + '/demo1-0.0.1-SNAPSHOT.jar';
         console.log(`Launching server with jar ${server}...`);
         serverProcess = ps.spawn('java', ['-jar', server]);
         // backend process

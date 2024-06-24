@@ -1,4 +1,6 @@
 const { ipcRenderer } = require('electron');
+const path = require('path');
+const os = require('os');
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js";
@@ -11,7 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const dxInput = document.getElementById('dxInput');
     readFile.addEventListener('click', async () => {
         //const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR2.msh'; // Replace with the actual file path
-        const dirPath = "C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit";
+       // const dirPath = "C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit";
+        const userDir = os.homedir();  // User dir
+        const dirPath = path.resolve(userDir, 'Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit');
+
         ipcRenderer.send('read-file2', dirPath);
     });
 });     
