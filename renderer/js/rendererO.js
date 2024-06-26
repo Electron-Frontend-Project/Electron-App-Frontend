@@ -45,7 +45,7 @@ let i=1;
 
 let camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
 directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
-container, lut
+container, lut, orthoCamera, sprite, uiScene
 ; 
 
 
@@ -53,17 +53,17 @@ init();
 
 function init() {
 
-    spheres = [];
-    container = document.querySelector('.topology-part');   
-    const container2 = document.querySelector('.corner-boxO');
-
+    spheres = [];   
     scene = new THREE.Scene();  
     scene2 = new THREE.Scene();
+    uiScene = new THREE.Scene();
     scene.background = new THREE.Color( "#ffffff" );    
     scene2.background = new THREE.Color( "#ffffff" );  
     THREE.Object3D.DefaultUp.set(0.0, 0.0, 1.0); // z axis  
   
     // Create a camera with appropriate aspect ratio and size
+    container = document.querySelector('.topology-part');   
+    const container2 = document.querySelector('.corner-boxO');
     const width = container.clientWidth;
     const height = container.clientHeight;
     const width2 = container2.clientWidth;
@@ -71,15 +71,19 @@ function init() {
     camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); 
     camera2 = new THREE.PerspectiveCamera(75, width2 / height2, 0.1, 1000); 
     
+   
+    orthoCamera = new THREE.OrthographicCamera( - 1, width / height , 1, - 1, 1, 2 );
+	orthoCamera.position.set( 0.75, 0, 1 );
+
     CAM_DISTANCE = 10;
-    camera.position.z = 30;
+    camera.position.z = 40;
     renderer = new THREE.WebGLRenderer({ alpha: true }); 
     renderer2 = new THREE.WebGLRenderer({ alpha: true }); 
     renderer.setClearColor( 0x000000, 0 ); // background color
     renderer2.setClearColor( 0x000000, 0 ); // backgorund color
     // Set the renderer's size to match the container
 
-
+ 
 
     renderer.setSize(width, height);   
     renderer2.setSize(width2, height2); 
@@ -105,7 +109,7 @@ function init() {
     ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
     scene.add(ambientLight);
     // Add a directional light to the scene
-    directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // White light, 50% intensity
+    directionalLight = new THREE.DirectionalLight(0xffffff, 1); // White light, 50% intensity
     directionalLight.position.set(1, 1, 1); // Set the direction of the light
     scene.add(directionalLight);
 
@@ -167,6 +171,7 @@ function createSphere() {
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
     const defaultMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
     lut = new Lut();
+    
 
     let maxDisp = -Infinity;
     let minDisp = Infinity;
@@ -191,6 +196,16 @@ function createSphere() {
     lut.setColorMap('rainbow'); // or any other color map you prefer
     lut.setMax(maxDisp); // set the max value from the displacement range
     lut.setMin(minDisp); // set the min value from the displacement range
+
+    sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: new THREE.CanvasTexture(lut.createCanvas()),
+        transparent: true,
+        opacity: 0.5
+    }));
+    sprite.material.map.colorSpace = THREE.SRGBColorSpace;
+    sprite.scale.x = 0.1;
+    //sprite.scale.set( 5, 5, 1 );
+    uiScene.add( sprite );
 
     // SPHERE
     lines.forEach(line => {
@@ -239,6 +254,7 @@ function createSphere() {
             spheres.push(sphere);    
             fixedObjectGroup.add(sphere);  
             spheres.push(sphere);
+            
        
         }
     });
@@ -303,7 +319,13 @@ function onCanvasClick(event) {
 
 function render() {
     createSphere();
-    renderer.render(scene, camera);
+
+
+ 
+    renderer.render( scene, camera );
+    renderer.autoClearColor = false;
+    renderer.render( uiScene, orthoCamera );
+    renderer.autoClearColor = true;
     renderer2.render(scene2, camera2);
     scene.remove(sphere); 
     

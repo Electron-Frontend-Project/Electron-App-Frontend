@@ -328,6 +328,17 @@ dialog {
   margin-bottom: 100px;
   border: 1px solid var(--primary-color-dark);
 }
+.topology-part {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: calc(100% - 220px);
+  margin-top: 120px;
+  margin-bottom: 100px;
+  border: 1px solid var(--primary-color-dark);
+}
+
 
 /*
 #sel_box {
@@ -433,6 +444,9 @@ dialog {
   background: darkgray;
 }
 
+
+
+
 .corner-boxO {
   position: absolute;
   bottom: 10px; 
@@ -486,16 +500,7 @@ dialog {
 
 
 
-.topology-part {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 50%;
-  height: calc(100% - 220px);
-  margin-top: 120px;
-  margin-bottom: 100px;
-  border: 1px solid var(--primary-color-dark);
-}
+
 
 /* Bottom Part */
 
