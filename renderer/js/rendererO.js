@@ -2,11 +2,14 @@ const { ipcRenderer } = require('electron');
 const path = require('path');
 const os = require('os');
 
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.0/build/three.module.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.0/examples/jsm/controls/OrbitControls.js";
+
+import { Lut } from './Lut.js';
 
 import { SelectionBox } from "./SelectionBox.js";
 import { SelectionHelper } from "./SelectionHelper.js";
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const readFile = document.getElementById('readFileO');
@@ -42,7 +45,7 @@ let i=1;
 
 let camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
 directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
-container
+container, lut
 ; 
 
 
@@ -57,9 +60,9 @@ function init() {
     scene = new THREE.Scene();  
     scene2 = new THREE.Scene();
     scene.background = new THREE.Color( "#ffffff" );    
-    scene2.background = new THREE.Color( "#ffffff" );   
+    scene2.background = new THREE.Color( "#ffffff" );  
     THREE.Object3D.DefaultUp.set(0.0, 0.0, 1.0); // z axis  
-
+  
     // Create a camera with appropriate aspect ratio and size
     const width = container.clientWidth;
     const height = container.clientHeight;
@@ -67,6 +70,7 @@ function init() {
     const height2 = container2.clientHeight;
     camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); 
     camera2 = new THREE.PerspectiveCamera(75, width2 / height2, 0.1, 1000); 
+    
     CAM_DISTANCE = 10;
     camera.position.z = 30;
     renderer = new THREE.WebGLRenderer({ alpha: true }); 
@@ -76,11 +80,6 @@ function init() {
     // Set the renderer's size to match the container
 
 
-   
-
-
-
-  
 
     renderer.setSize(width, height);   
     renderer2.setSize(width2, height2); 
@@ -94,46 +93,7 @@ function init() {
     scene2.add( axesHelper );
     currentAxis = 'none';
 
-    
-    
-    document.oncontextmenu = rightClick;
-    
-    
-    function rightClick(e) {
-        e.preventDefault();
-        if (document.getElementById("contextMenuO")
-                .style.display == "block")
-            hideMenu();
-        else{
-            var menu = document.getElementById("contextMenuO")
-            menu.style.display = 'block';
-            menu.style.left = e.pageX + "px";
-            menu.style.top = e.pageY + "px";
-            // click x-axis
-            document.getElementById("x-axis").addEventListener('click', function(e) {
-                e.preventDefault();
-                currentAxis = 'x';
-                alert('clicked x axis');
-                hideMenu();
-            });
-        
-            // click y-axis
-            document.getElementById("y-axis").addEventListener('click', function(e) {
-                e.preventDefault();
-                currentAxis = 'y';
-                alert('clicked y axis');
-                hideMenu();
-            });
-            // click z-axis
-            document.getElementById("z-axis").addEventListener('click', function(e) {
-                e.preventDefault();
-                currentAxis = 'z';
-                alert('clicked z axis');
-                hideMenu();
-            }); 
-        }        
-    } 
-    
+
     radius = dx / 2; // Radius of spheres
     widthSegments = 32; // Surface parts of the sphere
     heightSegments = 32; // Height divisions of the sphere
@@ -206,6 +166,32 @@ function animate() {
 function createSphere() {
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
     const defaultMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+    lut = new Lut();
+
+    let maxDisp = -Infinity;
+    let minDisp = Infinity;
+
+    // Find the maximum and minimum displacement values
+    lines.forEach(line => {
+        const values = line.split('\t'); // tab separated
+
+        if (values.length === 8) {
+            const dispx = parseFloat(values[5]);
+            const dispy = parseFloat(values[6]);
+            const dispz = parseFloat(values[7]);
+
+            const displacementMagnitude = Math.sqrt(dispx * dispx + dispy * dispy + dispz * dispz);
+
+            maxDisp = Math.max(maxDisp, displacementMagnitude);
+            minDisp = Math.min(minDisp, displacementMagnitude);
+        }
+    });
+
+    // Set up the LUT with a color map
+    lut.setColorMap('rainbow'); // or any other color map you prefer
+    lut.setMax(maxDisp); // set the max value from the displacement range
+    lut.setMin(minDisp); // set the min value from the displacement range
+
     // SPHERE
     lines.forEach(line => {
         const values = line.split('\t'); // tab separated
@@ -222,6 +208,15 @@ function createSphere() {
 
             sphere = new THREE.Mesh(geometry, defaultMaterial.clone());
 
+            // Calculate the displacement magnitude
+            const displacementMagnitude = Math.sqrt(dispx * dispx + dispy * dispy + dispz * dispz);
+
+            // Get the color from the LUT based on the displacement magnitude
+            const color = lut.getColor(displacementMagnitude);
+
+            // Set the color of the sphere
+            sphere.material.color = color;
+
             switch (currentAxis) {
                 case 'x':
                     sphere.position.set(x, 0, 0);
@@ -236,8 +231,8 @@ function createSphere() {
                     sphere.position.set(x, y, z);
                     break;
             }
-            
-           // scene.add(sphere);
+                    
+            // scene.add(sphere);
             sphere.designvar = designvar;
             sphere.displacement = dispx + " " + dispy + " " + dispz;
             sphere.strain = strain;
@@ -258,57 +253,52 @@ const canvas = document.querySelector('canvas');
 const boxPosition = new THREE.Vector3();
 renderer.domElement.addEventListener('click', onCanvasClick, false);
 
-    var INTERSECTED;
-
-    function onCanvasClick(event) {
-        // Calculate the mouse click position in normalized device coordinates (NDC)
-        var mouse = new THREE.Vector2();
-        const containerRect = container.getBoundingClientRect();
-        const x = ((event.clientX - containerRect.left) / container.clientWidth) * 2 - 1;
-        const y = -((event.clientY - containerRect.top) / container.clientHeight) * 2 + 1;
-
-        // Raycasting is used to determine which object was clicked
-        var raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera({ x, y }, camera);
-        raycaster.params.Points.threshold = 0.001; // Adjust the threshold as needed
-
-
-        var intersects = raycaster.intersectObjects(spheres, true);
-
-        if (intersects.length > 0) {
-            if (INTERSECTED != intersects[0].object) {
-                if (INTERSECTED) {
-                    INTERSECTED.material.emissive.set(INTERSECTED.currentHex);
-                }
-                INTERSECTED = intersects[0].object;
-                INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-                INTERSECTED.material.emissive.set(0xff0000);
-                const selectedMeshUUID = INTERSECTED.uuid;
-                const designVar = INTERSECTED.designvar;
-                const strainEnergy = INTERSECTED.strain;
-                const displacement = INTERSECTED.displacement;
-                // Update the text box content
-                const designVarText = "Design variable: " + designVar;
-                const strainEnergyText = "Strain energy: " + strainEnergy;
-                const displacementText = "Displacement: " + displacement;
-                document.getElementById("design-var2").textContent = designVarText;
-                document.getElementById("strain-energy2").textContent = strainEnergyText;
-                document.getElementById("displacement2").textContent = displacementText;
-               
-                boxPosition.setFromMatrixPosition(INTERSECTED.matrixWorld);
-                boxPosition.project(camera);
-                var widthHalf = container.clientWidth / 2;
-                var heightHalf = container.clientHeight / 2;
-                boxPosition.x = (boxPosition.x * widthHalf) + widthHalf;
-                boxPosition.y = - (boxPosition.y * heightHalf) + heightHalf;
-
-                infoBox.style.display='block';
+var INTERSECTED;
+function onCanvasClick(event) {
+    // Calculate the mouse click position in normalized device coordinates (NDC)
+    var mouse = new THREE.Vector2();
+    const containerRect = container.getBoundingClientRect();
+    const x = ((event.clientX - containerRect.left) / container.clientWidth) * 2 - 1;
+    const y = -((event.clientY - containerRect.top) / container.clientHeight) * 2 + 1;
+    // Raycasting is used to determine which object was clicked
+    var raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera({ x, y }, camera);
+    raycaster.params.Points.threshold = 0.001; // Adjust the threshold as needed
+    var intersects = raycaster.intersectObjects(spheres, true);
+    if (intersects.length > 0) {
+        if (INTERSECTED != intersects[0].object) {
+            if (INTERSECTED) {
+                INTERSECTED.material.emissive.set(INTERSECTED.currentHex);
             }
-        } else {
-            // Hide the text box if no mesh is clicked
-            infoBox.style.display='none';
+            INTERSECTED = intersects[0].object;
+            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+            INTERSECTED.material.emissive.set(0xff0000);
+            const selectedMeshUUID = INTERSECTED.uuid;
+            const designVar = INTERSECTED.designvar;
+            const strainEnergy = INTERSECTED.strain;
+            const displacement = INTERSECTED.displacement;
+            // Update the text box content
+            const designVarText = "Design variable: " + designVar;
+            const strainEnergyText = "Strain energy: " + strainEnergy;
+            const displacementText = "Displacement: " + displacement;
+            document.getElementById("design-var2").textContent = designVarText;
+            document.getElementById("strain-energy2").textContent = strainEnergyText;
+            document.getElementById("displacement2").textContent = displacementText;
+           
+            boxPosition.setFromMatrixPosition(INTERSECTED.matrixWorld);
+            boxPosition.project(camera);
+            var widthHalf = container.clientWidth / 2;
+            var heightHalf = container.clientHeight / 2;
+            boxPosition.x = (boxPosition.x * widthHalf) + widthHalf;
+            boxPosition.y = - (boxPosition.y * heightHalf) + heightHalf;
+            infoBox.style.display='block';
         }
+    } else {
+        // Hide the text box if no mesh is clicked
+        infoBox.style.display='none';
     }
+}
+
 
 
 function render() {
