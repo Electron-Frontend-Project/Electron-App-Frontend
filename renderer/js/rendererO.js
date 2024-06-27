@@ -45,7 +45,7 @@ let i=1;
 
 let camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
 directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
-container, lut, orthoCamera, sprite, uiScene
+container, lut, orthoCamera, sprite, uiScene, textSprite
 ; 
 
 
@@ -172,7 +172,6 @@ function createSphere() {
     const defaultMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
     lut = new Lut();
     
-
     let maxDisp = -Infinity;
     let minDisp = Infinity;
 
@@ -202,10 +201,36 @@ function createSphere() {
         transparent: true,
         opacity: 0.5
     }));
+
     sprite.material.map.colorSpace = THREE.SRGBColorSpace;
     sprite.scale.x = 0.1;
-    //sprite.scale.set( 5, 5, 1 );
-    uiScene.add( sprite );
+    uiScene.add(sprite);
+
+    // Create a canvas for the text label
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 64;
+    const context = canvas.getContext('2d');
+    context.font = '12px Arial';
+    context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
+    context.fillText('Displacement', 0, 40);
+
+    const texture = new THREE.CanvasTexture(canvas);
+
+    // Remove the previous text sprite if it exists
+    if (textSprite) {
+        uiScene.remove(textSprite);
+    }
+
+    textSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 1.0
+    }));
+
+    textSprite.scale.set(1, 0.25, 1); // Adjust size as needed
+    textSprite.position.set(0.35, 0.55, 0); // Position above the original sprite
+    uiScene.add(textSprite);
 
     // SPHERE
     lines.forEach(line => {
@@ -221,7 +246,7 @@ function createSphere() {
             const dispy = parseFloat(values[6]);
             const dispz = parseFloat(values[7]);
 
-            sphere = new THREE.Mesh(geometry, defaultMaterial.clone());
+            const sphere = new THREE.Mesh(geometry, defaultMaterial.clone());
 
             // Calculate the displacement magnitude
             const displacementMagnitude = Math.sqrt(dispx * dispx + dispy * dispy + dispz * dispz);
@@ -246,23 +271,24 @@ function createSphere() {
                     sphere.position.set(x, y, z);
                     break;
             }
-                    
-            // scene.add(sphere);
+
             sphere.designvar = designvar;
             sphere.displacement = dispx + " " + dispy + " " + dispz;
             sphere.strain = strain;
-            spheres.push(sphere);    
-            fixedObjectGroup.add(sphere);  
             spheres.push(sphere);
-            
-       
+            fixedObjectGroup.add(sphere);
+            spheres.push(sphere);
         }
     });
+
     // clean up
     geometry.dispose();
-    defaultMaterial.dispose();  
-    
+    defaultMaterial.dispose();
 }
+
+
+
+
 
 var infoBox = document.getElementById("info-box2"); // text box for mesh info
 const canvas = document.querySelector('canvas');
@@ -319,9 +345,6 @@ function onCanvasClick(event) {
 
 function render() {
     createSphere();
-
-
- 
     renderer.render( scene, camera );
     renderer.autoClearColor = false;
     renderer.render( uiScene, orthoCamera );
