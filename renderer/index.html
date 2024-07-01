@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+
+ <!--   <script type="importmap">
+      {
+        "imports": {
+          "three": "C:/Users/suuser/Desktop/Electron-Github/Electron-App-Frontend/node_modules/three/build/three.module.js",
+          "OrbitControls": "C:/Users/suuser/Desktop/Electron-Github/Electron-App-Frontend/node_modules/three/examples/jsm/controls/OrbitControls.js"
+        }
+      }
+    </script>   -->
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,6 +22,7 @@
     <script src="js/renderer.js" type="module"></script>
 
     <title>PDTO</title>
+    
  
   </head>
   <body>
@@ -197,8 +207,8 @@
 
     
     <div class="main-part" id="main-part">
-      <div class="design-part" id="scene-container1">
-        
+      
+      <div class="design-part" id="scene-container1">        
         <div id="info-box1" class="info-box1">
           <p id="design-var1"></p>
           <p id="strain-energy1"></p>
@@ -234,6 +244,19 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <span class="topology-text" style="margin-left: 10px; color: #7d7d7d;">Optimum Topology</span>
         <div class="corner-boxO"></div>
+
+        <!-- Create a button with a dropdown menu -->
+       
+
+        <form id="form1">
+          <select id="color-map-select" style="width: 350px">
+            <option value='' selected>Select a Color Map</option>
+            <option value="rainbow">Rainbow</option>
+            <option value="cooltowarm">Cool to Warm</option>
+            <option value="blackbody">Blackbody</option>
+            <option value="grayscale">Grayscale</option>
+          </select>
+        </form>
 
         <div id="contextMenu" class="context-menu" 
         style="display:none">
