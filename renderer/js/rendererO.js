@@ -45,10 +45,10 @@ let i=1;
 
 let camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
 directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
-container, lut, orthoCamera, sprite, uiScene, textSprite
+container, lut, orthoCamera, sprite, uiScene, textSprite, selectedColorMap = ''
 ; 
-let selectedColorMap = '';
 
+// **Selectring color map**
 const colorMapSelect = document.getElementById('color-map-select');
 
 colorMapSelect.addEventListener('change', (event) => {
@@ -59,8 +59,6 @@ colorMapSelect.addEventListener('change', (event) => {
 init();
 
 function init() {
-
-    
 
     spheres = [];   
     scene = new THREE.Scene();  
@@ -78,8 +76,7 @@ function init() {
     const width2 = container2.clientWidth;
     const height2 = container2.clientHeight;
     camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); 
-    camera2 = new THREE.PerspectiveCamera(75, width2 / height2, 0.1, 1000); 
-    
+    camera2 = new THREE.PerspectiveCamera(75, width2 / height2, 0.1, 1000);     
    
     orthoCamera = new THREE.OrthographicCamera( - 1, width / height , 1, - 1, 1, 2 );
 	orthoCamera.position.set( 0.75, 0, 1 );
@@ -91,8 +88,6 @@ function init() {
     renderer.setClearColor( 0x000000, 0 ); // background color
     renderer2.setClearColor( 0x000000, 0 ); // backgorund color
     // Set the renderer's size to match the container
-
- 
 
     renderer.setSize(width, height);   
     renderer2.setSize(width2, height2); 
@@ -123,7 +118,19 @@ function init() {
     scene.add(directionalLight);
 
     const fileQueue = []; // Queue to hold files in order
+
     ipcRenderer.on('file-data2', (event, fileData) => {
+
+        // Update container width and height
+        const container = document.querySelector('.topology-part');
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        // Update camera and renderer with new container size
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+  
         const name = fileData.name;
         const data = fileData.content;
        
@@ -158,6 +165,7 @@ function init() {
         
     });
 }
+
 function animate() {
     
     requestAnimationFrame(animate);
