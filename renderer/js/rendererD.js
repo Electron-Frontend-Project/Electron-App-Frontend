@@ -4,6 +4,7 @@ const os = require('os');
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js";
+
 import { SelectionBox } from "./SelectionBox.js";
 import { SelectionHelper } from "./SelectionHelper.js";
 
@@ -101,42 +102,6 @@ ipcRenderer.on('file-data1', (event, data) => {
 
     let currentAxis = 'none';
 
-    function rightClick(e) {
-        e.preventDefault();  
-        if (document.getElementById("contextMenuD")
-                .style.display == "block")
-            hideMenu();
-        else{
-            var menu = document.getElementById("contextMenuD")
-            menu.style.display = 'block';
-            menu.style.left = e.pageX + "px";
-            menu.style.top = e.pageY + "px";
-
-            // click x-axis
-            document.getElementById("x-axis").addEventListener('click', function(e) {
-                e.preventDefault();
-                currentAxis = 'x';
-                alert('clicked x axis');
-                hideMenu();
-            });
-  
-            // click y-axis
-            document.getElementById("y-axis").addEventListener('click', function(e) {
-                e.preventDefault();
-                currentAxis = 'y';
-                alert('clicked y axis');
-                hideMenu();
-            });
-
-            // click z-axis
-            document.getElementById("z-axis").addEventListener('click', function(e) {
-                e.preventDefault();
-                currentAxis = 'z';
-                alert('clicked z axis');
-                hideMenu();
-            });
-        }
-    }
 
     // fixed object group
     const fixedObjectGroup = new THREE.Group();
@@ -281,7 +246,7 @@ ipcRenderer.on('file-data1', (event, data) => {
     });
 
 // ** Send selectedMeshes list to HTML ** 
-    document.getElementById('bcareaSub').addEventListener('click', function() {
+    document.getElementById('bcSubmit').addEventListener('click', function() {
         sendDesignVarInfo(selectedMeshes);
     });
     function sendDesignVarInfo(meshes) {

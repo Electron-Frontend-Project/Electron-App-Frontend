@@ -208,8 +208,8 @@ function createSphere() {
             minDisp = Math.min(minDisp, displacementMagnitude);
         }
     });
-    console.log(`Minimum displacement value: ${minDisp}`);
-    console.log(`Maximum displacement value: ${maxDisp}`);
+  //  console.log(`Minimum displacement value: ${minDisp}`);
+  //  console.log(`Maximum displacement value: ${maxDisp}`);
 
     // Set up the LUT with a color map
 

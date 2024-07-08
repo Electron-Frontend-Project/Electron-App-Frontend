@@ -132,79 +132,85 @@
       </ul>
     </nav>
 
+
+
+
+
     <!-- Dialog window for Boundary Condition parameters-->
-    <dialog id="force-bc">This is a dialog window
-      <button id="force">Apply Force</button>
-      <div class="modal1">
-        <div class="modal-header1">
-          <span class="close-btn1">&times;</span>
-          <h1>Force</h1>
-        </div>
-        <div class="modal-content1">
-          <p>1. Select points: </p>
-          <div id="list-container1"></div>
-          <button id="forcepointadd">Add</button>
-          <button id="forcepointSub">Submit</button>
-        </div>
-        <div class="modal-content1">
-          <p>2. Force Component: </p>
-          <ul>
-            <li>
-              <label> x </label>
-              <input id="x-com"  type="number">
-            </li>
-            <li>
-              <label> y </label>
-              <input id="y-com" type="number">
-            </li>
-            <li>
-              <label> z </label>
-              <input id="z-com" type="number">
-            </li>
-            <button id="forceFSubmit">Submit</button>
-          </ul>
-          <button id="forceSend">Send</button>
-        </div>
+<dialog id="force-bc">This is a dialog window
+  <form>
+    <fieldset>
+      <div class="modal-header1">
+        <h1>Force</h1>
       </div>
+      <p>1. Select points: </p>
+      <div id="list-container1"></div>
+      <button id="forcepointadd" type="button">Add</button>
+      <p>2. Force Component: </p>
+      <ul>
+        <li>
+          <label> x </label>
+          <input id="x-com" type="number">
+        </li>
+        <li>
+          <label> y </label>
+          <input id="y-com" type="number">
+        </li>
+        <li>
+          <label> z </label>
+          <input id="z-com" type="number">
+        </li>
+      </ul>
+    </fieldset>
 
-      <button id="bc">Apply BC</button>
-      <div class="modal2">
-        <div class="modal-header2">
-          <span class="close-btn2">&times;</span>
-          <h1>BC</h1>
-        </div>
-        <div class="modal-content2">
-          <p>1. Select area: </p>
-          <div id="list-container2"></div>
-          <button id="bcareaadd">Pick area</button>
-          <button id="clearselectedsphere">Clear</button>
-          <div id="spherelist" class="spherelist">
-            <p id="list" style="display: none;"></p>
-        </div>
-
-        <button id="bcareaSub">Submit</button>
+    <fieldset>
+      <div class="modal-header2">
+        <h1>BC</h1>
       </div>
-        
-        <div class="modal-content2">
-          <p>2. Constraint Component: </p>
-          <ul>
-            <li>
-              <button id="x-btn"> x </button>
-            </li>
-            <li>
-              <button id="y-btn"> y </button>
-            </li>
-            <li>
-              <button id="z-btn"> z </button>
-            </li>
-            <button id="bcFSubmit"> Submit </button>
-          </ul>
-          <button id="bcSend">Send</button>
-        </div>
+      <p>1. Select area: </p>
+      <div id="list-container2"></div>
+      <button id="bcareaadd" type="button">Pick area</button>
+      <button id="clearselectedsphere" type="button">Clear</button>
+      <div id="spherelist" class="spherelist">
+        <p id="list" style="display: none;"></p>
+        <p>2. Constraint Component: </p>
+        <ul>
+          <li>
+            <input type="checkbox" id="x-checkbox"> x
+          </li>
+          <li>
+            <input type="checkbox" id="y-checkbox"> y
+          </li>
+          <li>
+            <input type="checkbox" id="z-checkbox"> z
+          </li>
+        </ul>
       </div>
-      <button id="closeDialog">Close</button>
-    </dialog>
+    </fieldset>
+    <button id="bcSubmit" type="button">Submit send</button>
+    <button id="closeDialog" type="button">Close</button>
+  </form>
+</dialog>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     
     <div class="main-part" id="main-part">
       
