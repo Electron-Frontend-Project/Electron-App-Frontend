@@ -534,104 +534,106 @@ dialog {
 
 
 
-.force-bc{
-	max-width: 500px;
-	padding: 10px 20px;
-	background: #f4f7f8;
-	margin: 10px auto;
-	padding: 20px;
-	background: #f4f7f8;
-	border-radius: 8px;
-	font-family: Georgia, "Times New Roman", Times, serif;
-}
-.force-bc fieldset{
-	border: none;
-}
-.force-bc legend {
-	font-size: 1.4em;
-	margin-bottom: 10px;
-}
-.force-bc label {
-	display: block;
-	margin-bottom: 8px;
-}
-.force-bc input[type="text"],
-.force-bc input[type="date"],
-.force-bc input[type="datetime"],
-.force-bc input[type="email"],
-.force-bc input[type="number"],
-.force-bc input[type="search"],
-.force-bc input[type="time"],
-.force-bc input[type="url"],
-.force-bc textarea,
-.force-bc select {
-	font-family: Georgia, "Times New Roman", Times, serif;
-	background: rgba(255,255,255,.1);
-	border: none;
-	border-radius: 4px;
-	font-size: 15px;
-	margin: 0;
-	outline: 0;
-	padding: 10px;
-	width: 100%;
-	box-sizing: border-box; 
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box; 
-	background-color: #e8eeef;
-	color:#8a97a0;
-	-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
-	box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
-	margin-bottom: 30px;
-}
-.force-bc input[type="text"]:focus,
-.force-bc input[type="date"]:focus,
-.force-bc input[type="datetime"]:focus,
-.force-bc input[type="email"]:focus,
-.force-bc input[type="number"]:focus,
-.force-bc input[type="search"]:focus,
-.force-bc input[type="time"]:focus,
-.force-bc input[type="url"]:focus,
-.force-bc textarea:focus,
-.force-bc select:focus{
-	background: #d2d9dd;
-}
-.force-bc select{
-	-webkit-appearance: menulist-button;
-	height:35px;
-}
-.force-bc .number {
-	background: #1abc9c;
-	color: #fff;
-	height: 30px;
-	width: 30px;
-	display: inline-block;
-	font-size: 0.8em;
-	margin-right: 4px;
-	line-height: 30px;
-	text-align: center;
-	text-shadow: 0 1px 0 rgba(255,255,255,0.2);
-	border-radius: 15px 15px 15px 0px;
+#force-bc {
+  max-width: 80%; /* changed to percentage */
+  padding: 2% 4%; /* changed to percentage */
+  background: var(--body-color); /* background color changed to #f8f8fa */
+  margin: 2% auto;
+  padding: 3%; /* changed to percentage */
+  border-radius: 0.5em; /* changed to em unit */
+  font-family: Georgia, "Times New Roman", Times, serif;
 }
 
-.force-bc input[type="submit"],
-.force-bc input[type="button"]
-{
-	position: relative;
-	display: block;
-	padding: 19px 39px 18px 39px;
-	color: #FFF;
-	margin: 0 auto;
-	background: #1abc9c;
-	font-size: 18px;
-	text-align: center;
-	font-style: normal;
-	width: 100%;
-	border: 1px solid #16a085;
-	border-width: 1px 1px 3px;
-	margin-bottom: 10px;
+#force-bc fieldset {
+  border: none;
+  margin-bottom: 2%; /* changed to percentage */
 }
-.force-bc input[type="submit"]:hover,
-.force-bc input[type="button"]:hover
-{
-	background: #109177;
+
+#force-bc legend {
+  font-size: 1.4em;
+  font-weight: bold; /* added bold font weight to legend */
+  color: var(--text-color-dark); /* changed legend text color to #7d7d7d */
+  margin-bottom: 1%; /* changed to percentage */
+  padding-bottom: 1%; /* changed to percentage */
+  border-bottom: 0.1em solid var(--sidebar-color); /* changed to em unit */
 }
+
+#force-bc label {
+  display: block;
+  margin-bottom: 1%; /* changed to percentage */
+}
+
+#force-bc input[type="number"] {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  background: #ffffff; /* changed input background color to white */
+  border: none;
+  border-radius: 0.5em; /* changed to em unit */
+  font-size: 1.2em; /* changed to em unit */
+  margin: 0;
+  outline: 0;
+  padding: 2%; /* changed to percentage */
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  color: #333333; /* changed input text color to dark gray */
+  -webkit-box-shadow: 0 0.1em 0 rgba(0, 0, 0, 0.03) inset;
+  box-shadow: 0 0.1em 0 rgba(0, 0, 0, 0.03) inset;
+  margin-bottom: 2%; /* changed to percentage */
+}
+
+#force-bc button[type="button"] {
+  position: relative;
+  display: inline-block;
+  padding: 2% 4%; /* changed to percentage */
+  color: #ffffff; /* changed button text color to white */
+  margin: 0 2%; /* changed to percentage */
+  background: #FFC080; /* changed button background color to a nice red */
+  font-size: 1.2em; /* changed to em unit */
+  text-align: center;
+  font-style: normal;
+  border: 0.1em solid var(--sidebar-color); /* changed to em unit */
+  border-width: 0.1em 0.1em 0.3em;
+  margin-bottom: 2%; /* changed to percentage */
+  border-radius: 0.5em; /* changed to em unit */
+}
+
+#force-bc button[type="button"]:hover {
+  background: #FF9900; /* changed button hover background color to a darker red */
+}
+
+#force-bc #bcSubmit, #force-bc #closeDialog {
+  position: relative;
+  display: block;
+  padding: 3% 6%; /* changed to percentage */
+  color: #ffffff; /* changed button text color to white */
+  margin: 0 auto;
+  background: #FFC080; /* changed button background color to a nice red */
+  font-size: 1.4em; /* changed to em unit */
+  text-align: center;
+  font-style: normal;
+  width: 100%;
+  border: 0.1em solid var(--sidebar-color); /* changed to em unit */
+  border-width: 0.1em 0.1em 0.3em;
+  margin-bottom: 2%; /* changed to percentage */
+  border-radius: 0.5em; /* changed to em unit */
+}
+
+#force-bc #bcSubmit:hover, #force-bc #closeDialog:hover {
+  background: #FF9900; /* changed button hover background color to a darker red */
+}
+
+.modal-header1, .modal-header2 {
+  background-color: #f8f8fa; /* light gray background */
+  padding: 1em; /* add some padding */
+  border-bottom: 1px solid #ddd; /* add a bottom border */
+  font-size: 1.2em; /* increase font size */
+  font-weight: bold; /* make font bold */
+  text-align: center; /* center the text */
+  color: #333; /* dark gray text color */
+}
+
+.modal-header1, .modal-header2{
+  background-color: #FFC080; /* orange background for Force header */
+}
+

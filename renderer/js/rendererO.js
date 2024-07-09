@@ -201,14 +201,11 @@ function createSphere() {
     let maxStrain = -Infinity;
     let minStrain = Infinity;
 
-
     if(selectedData == 'strain'){
         lines.forEach(line => {
-            const values = line.split('\t'); // tab separated
-        
+            const values = line.split('\t'); // tab separated        
             if (values.length === 8) {
-                const strain = parseFloat(values[3]);
-        
+                const strain = parseFloat(values[3]);        
                 maxStrain = Math.max(maxStrain, strain);
                 minStrain = Math.min(minStrain, strain);
             }
@@ -257,8 +254,6 @@ function createSphere() {
     
         context.fillText(maxStrain.toFixed(8), textX, yOffset); // Add max value to the top
 
-        context.fillText(maxDisp.toFixed(8), textX, yOffset); // Add max value to the top
-
         for (let i = 0; i <= scaleSteps; i++) {
             const value = minStrain + ((i / scaleSteps) * (maxStrain - minStrain));
             const y = (canvas.height / scale) - (i / scaleSteps) * ((canvas.height / scale) ) - yOffset + 20; // Add 20 pixels of space between max value and scale
@@ -290,9 +285,6 @@ function createSphere() {
         textSprite.position.set(-0.0001, 0, 0); // Position to the side of the original sprite
         uiScene.add(textSprite);
 
-    
-
-
     }else{
         // Find the maximum and minimum displacement values
         lines.forEach(line => {
@@ -303,18 +295,14 @@ function createSphere() {
                 const dispy = parseFloat(values[6]);
                 const dispz = parseFloat(values[7]);
             
-                const displacementMagnitude = Math.sqrt(dispx * dispx + dispy * dispy + dispz * dispz);
-            
+                const displacementMagnitude = Math.sqrt(dispx * dispx + dispy * dispy + dispz * dispz);            
                 maxDisp = Math.max(maxDisp, displacementMagnitude);
                 minDisp = Math.min(minDisp, displacementMagnitude);
             }
         });
-  //      console.log(`Minimum displacement value: ${minDisp}`);
-  //      console.log(`Maximum displacement value: ${maxDisp}`);
     
-        // **Set up the LUT with a color map**
-    
-        lut.setColorMap(selectedColorMap); // or any other color map you prefer
+        // **Set up the LUT with a color map**    
+        lut.setColorMap(selectedColorMap); 
         lut.setMax(maxDisp); // set the max value from the displacement range
         lut.setMin(minDisp); // set the min value from the displacement range
     
@@ -339,7 +327,6 @@ function createSphere() {
         context.scale(scale, scale); // Scale context for higher resolution
         context.font = '24px Arial'; // Decrease font size
         context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
-      // context.fillText('Displacement', 10, 20); // Adjust position for the smaller font
     
         // Draw the displacement scale with max at the top and min at the bottom
         const scaleSteps = 13; // Number of steps in the scale
@@ -353,31 +340,26 @@ function createSphere() {
         context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
     
         // Draw short line above max value
-        context.fillRect(textX - 5, yOffset - 5, lineLength, 2);
-    
+        context.fillRect(textX - 5, yOffset - 5, lineLength, 2);    
         context.fillText(maxDisp.toFixed(8), textX, yOffset); // Add max value to the top
     
         for (let i = 0; i <= scaleSteps; i++) {
             const value = minDisp + ((i / scaleSteps) * (maxDisp - minDisp));
             const y = (canvas.height / scale) - (i / scaleSteps) * ((canvas.height / scale) ) - yOffset + 20; // Add 20 pixels of space between max value and scale
-        
             // Draw short line
-            context.fillRect(lineX, y - 5, lineLength, 2);
-        
+            context.fillRect(lineX, y - 5, lineLength, 2);        
             // Draw the displacement value
             context.font = '30px Arial'; // Increase font size
             const textValue = value === 0? "0" : value.toFixed(8);
             context.fillText(textValue, textX, y);
         }
-    
         const texture = new THREE.CanvasTexture(canvas);
         texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // Improve texture quality
     
         // Remove the previous text sprite if it exists
         if (textSprite) {
             uiScene.remove(textSprite);
-        }
-    
+        }    
         textSprite = new THREE.Sprite(new THREE.SpriteMaterial({
             map: texture,
             transparent: true,
@@ -387,15 +369,11 @@ function createSphere() {
         textSprite.scale.set(0.25, 1, 1); // Adjust size for the higher resolution
         textSprite.position.set(-0.0001, 0, 0); // Position to the side of the original sprite
         uiScene.add(textSprite);
-
-
     }
-
     
-    // SPHERE  !!!!!!!!!!
+    // SPHERE  
     lines.forEach(line => {
         const values = line.split('\t'); // tab separated
-
         if (values.length === 8) {
             const x = parseFloat(values[0]);
             const y = parseFloat(values[1]);
@@ -444,10 +422,6 @@ function createSphere() {
     geometry.dispose();
     defaultMaterial.dispose();
 }
-
-
-
-
 
 var infoBox = document.getElementById("info-box2"); // text box for mesh info
 const canvas = document.querySelector('canvas');
@@ -499,8 +473,6 @@ function onCanvasClick(event) {
         infoBox.style.display='none';
     }
 }
-
-
 
 function render() {
     createSphere();
