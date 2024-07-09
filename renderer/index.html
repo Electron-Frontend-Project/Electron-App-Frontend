@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-
- <!--   <script type="importmap">
-      {
-        "imports": {
-          "three": "C:/Users/suuser/Desktop/Electron-Github/Electron-App-Frontend/node_modules/three/build/three.module.js",
-          "OrbitControls": "C:/Users/suuser/Desktop/Electron-Github/Electron-App-Frontend/node_modules/three/examples/jsm/controls/OrbitControls.js"
-        }
-      }
-    </script>   -->
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,16 +8,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="css/style.css" />
+
     <script src="js/renderer.js" type="module"></script>
 
     <title>PDTO</title>
-    
- 
   </head>
-  <body>
-    
+  <body>   
     <nav class="sidebar">
       <ul>
         <li>
@@ -71,22 +59,7 @@
               
             </ul>
           </div>
-    <!--     <div class="sidebar-item" id="manu-cons">
-            <p class="title">Additive Manufacturing Constraints</p>
-            <ul>
-              <li>
-                <label for="minsize-label" style="font-size: 14px;">Minimum Feature Size</label>
-                <input type="text" name="minsize-label" style="width: 40px;"></input>
-              </li>
-              <li>
-                <label for="overhang-label" style="font-size: 14px;">Overhang Angle</label>
-                <input type="text" name="overhang-label" style="width:30px;"></input></p>
-              </li>
-              <li>
-                <button input="button">Residual Stress Spots</button>
-              </li>
-            </ul>
-          </div>    --> 
+    
           <div class="sidebar-item" id="manu-cons">
             <p class="title">Particle Discretization Parameters</p>
             <ul>
@@ -134,84 +107,63 @@
 
 
 
-
-
     <!-- Dialog window for Boundary Condition parameters-->
-<dialog id="force-bc">This is a dialog window
-  <form>
-    <fieldset>
-      <div class="modal-header1">
-        <h1>Force</h1>
-      </div>
-      <p>1. Select points: </p>
-      <div id="list-container1"></div>
-      <button id="forcepointadd" type="button">Add</button>
-      <p>2. Force Component: </p>
-      <ul>
-        <li>
-          <label> x </label>
-          <input id="x-com" type="number">
-        </li>
-        <li>
-          <label> y </label>
-          <input id="y-com" type="number">
-        </li>
-        <li>
-          <label> z </label>
-          <input id="z-com" type="number">
-        </li>
-      </ul>
-    </fieldset>
-
-    <fieldset>
-      <div class="modal-header2">
-        <h1>BC</h1>
-      </div>
-      <p>1. Select area: </p>
-      <div id="list-container2"></div>
-      <button id="bcareaadd" type="button">Pick area</button>
-      <button id="clearselectedsphere" type="button">Clear</button>
-      <div id="spherelist" class="spherelist">
-        <p id="list" style="display: none;"></p>
-        <p>2. Constraint Component: </p>
-        <ul>
-          <li>
-            <input type="checkbox" id="x-checkbox"> x
-          </li>
-          <li>
-            <input type="checkbox" id="y-checkbox"> y
-          </li>
-          <li>
-            <input type="checkbox" id="z-checkbox"> z
-          </li>
-        </ul>
-      </div>
-    </fieldset>
-    <button id="bcSubmit" type="button">Submit send</button>
-    <button id="closeDialog" type="button">Close</button>
-  </form>
-</dialog>
-
-
+    <dialog id="force-bc">
+      <form>
+        <fieldset>
+          <div class="modal-header1">
+            <h1>Force</h1>
+          </div>
+          <p>1. Select points: </p>
+          <div id="list-container1"></div>
+          <button id="forcepointadd" type="button">Add</button>
+          <p>2. Force Component: </p>
+          <ul>
+            <li>
+              <label> x </label>
+              <input id="x-com" type="number">
+            </li>
+            <li>
+              <label> y </label>
+              <input id="y-com" type="number">
+            </li>
+            <li>
+              <label> z </label>
+              <input id="z-com" type="number">
+            </li>
+          </ul>
+        </fieldset>
+      
+        <fieldset>
+          <div class="modal-header2">
+            <h1>BC</h1>
+          </div>
+          <p>1. Select area: </p>
+          <div id="list-container2"></div>
+          <button id="bcareaadd" type="button">Pick area</button>
+          <button id="clearselectedsphere" type="button">Clear</button>
+          <div id="spherelist" class="spherelist">
+            <p id="list" style="display: none;"></p>
+            <p>2. Constraint Component: </p>
+            <ul>
+              <li>
+                <input type="checkbox" id="x-checkbox"> x
+              </li>
+              <li>
+                <input type="checkbox" id="y-checkbox"> y
+              </li>
+              <li>
+                <input type="checkbox" id="z-checkbox"> z
+              </li>
+            </ul>
+          </div>
+        </fieldset>
+        <button id="bcSubmit" type="button">Submit</button>
+        <button id="closeDialog" type="button">Close</button>
+      </form>
+    </dialog>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    
     <div class="main-part" id="main-part">
       
       <div class="design-part" id="scene-container1">        
@@ -253,16 +205,24 @@
 
         <!-- Create a button with a dropdown menu -->
        
-
-        <form id="form1">
-          <select id="color-map-select" style="width: 350px">
-            <option value='' selected>Select a Color Map</option>
-            <option value="rainbow">Rainbow</option>
-            <option value="cooltowarm">Cool to Warm</option>
-            <option value="blackbody">Blackbody</option>
-            <option value="grayscale">Grayscale</option>
-          </select>
-        </form>
+        <div style="display: flex; flex-direction: row;">
+          <form id="form2">
+            <select id="disp-strain-select" >
+              <option value='' selected>Select type</option>
+              <option value="displacement">Displacement</option>
+              <option value="strain">Strain</option>          
+            </select>
+          </form>
+          <form id="form1">
+            <select id="color-map-select" >
+              <option value='' selected>Select a Color Map</option>
+              <option value="rainbow">Rainbow</option>
+              <option value="cooltowarm">Cool to Warm</option>
+              <option value="blackbody">Blackbody</option>
+              <option value="grayscale">Grayscale</option>
+            </select>
+          </form>
+        </div>
 
         <div id="contextMenu" class="context-menu" 
         style="display:none">

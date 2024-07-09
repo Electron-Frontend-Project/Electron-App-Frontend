@@ -45,15 +45,21 @@ let i=1;
 
 let camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
 directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
-container, lut, orthoCamera, sprite, uiScene, textSprite, selectedColorMap = ''
+container, lut, orthoCamera, sprite, uiScene, textSprite, selectedColorMap = '', selectedData = ''
 ; 
 
 // **Selectring color map**
 const colorMapSelect = document.getElementById('color-map-select');
+const dataSelect = document.getElementById('disp-strain-select');
 
 colorMapSelect.addEventListener('change', (event) => {
   selectedColorMap = event.target.value;
   console.log("selected map2:" + selectedColorMap);
+});
+
+dataSelect.addEventListener('change', (event) => {
+    selectedData = event.target.value;
+    console.log("selected data: " + selectedData);
 });
 
 init();
@@ -185,112 +191,208 @@ function animate() {
 
 
 function createSphere() {
-    console.log("selectedColorMap1:", selectedColorMap);
+   // console.log("selectedColorMap1:", selectedColorMap);
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
     const defaultMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
     lut = new Lut();
     
     let maxDisp = -Infinity;
     let minDisp = Infinity;
+    let maxStrain = -Infinity;
+    let minStrain = Infinity;
 
-    // Find the maximum and minimum displacement values
-    lines.forEach(line => {
-        const values = line.split('\t'); // tab separated
 
-        if (values.length === 8) {
-            const dispx = parseFloat(values[5]);
-            const dispy = parseFloat(values[6]);
-            const dispz = parseFloat(values[7]);
+    if(selectedData == 'strain'){
+        lines.forEach(line => {
+            const values = line.split('\t'); // tab separated
+        
+            if (values.length === 8) {
+                const strain = parseFloat(values[3]);
+        
+                maxStrain = Math.max(maxStrain, strain);
+                minStrain = Math.min(minStrain, strain);
+            }
+        });
+        // Set up the LUT with a color map
+        lut.setColorMap(selectedColorMap); // or any other color map you prefer
+        lut.setMax(maxStrain); // set the max value from the strain range
+        lut.setMin(minStrain); // set the min value from the strain range
 
-            const displacementMagnitude = Math.sqrt(dispx * dispx + dispy * dispy + dispz * dispz);
+        sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(lut.createCanvas()),
+            transparent: true,
+            opacity: 0.5
+        }));
+    
+        sprite.material.map.colorSpace = THREE.SRGBColorSpace;
+        sprite.scale.x = 0.1;
+        sprite.position.set(-0.1, 0, 0); // sprite position
+    
+        uiScene.add(sprite);
+    
+        // Create a high-resolution canvas for the text label and displacement scale
+        const canvas = document.createElement('canvas');
+        const scale = 2; // Increase scale for higher resolution
+        canvas.width = 256 * scale;
+        canvas.height = 1024 * scale; // Increased height to accommodate the scale
+        const context = canvas.getContext('2d');
+        context.scale(scale, scale); // Scale context for higher resolution
+        context.font = '24px Arial'; // Decrease font size
+        context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
+       // context.fillText('Displacement', 10, 20); // Adjust position for the smaller font
+    
+        // Draw the displacement scale with max at the top and min at the bottom
+        const scaleSteps = 13; // Number of steps in the scale
+        const yOffset = 20; // Offset from the top
+        const lineLength = 20; // Length of the scale lines
+        const lineX = 50; // X position of the scale lines (adjusted)
+        const textX = 80; // X position of the text (adjusted)
+    
+        // Add the maximum displacement value to the top
+        context.font = '30px Arial'; // Increase font size
+        context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
+    
+        // Draw short line above max value
+        context.fillRect(textX - 5, yOffset - 5, lineLength, 2);
+    
+        context.fillText(maxStrain.toFixed(8), textX, yOffset); // Add max value to the top
 
-            maxDisp = Math.max(maxDisp, displacementMagnitude);
-            minDisp = Math.min(minDisp, displacementMagnitude);
+        context.fillText(maxDisp.toFixed(8), textX, yOffset); // Add max value to the top
+
+        for (let i = 0; i <= scaleSteps; i++) {
+            const value = minStrain + ((i / scaleSteps) * (maxStrain - minStrain));
+            const y = (canvas.height / scale) - (i / scaleSteps) * ((canvas.height / scale) ) - yOffset + 20; // Add 20 pixels of space between max value and scale
+
+            // Draw short line
+            context.fillRect(lineX, y - 5, lineLength, 2);
+
+            // Draw the displacement value
+            context.font = '30px Arial'; // Increase font size
+            const textValue = value === 0? "0" : value.toFixed(8);
+            context.fillText(textValue, textX, y);
         }
-    });
-  //  console.log(`Minimum displacement value: ${minDisp}`);
-  //  console.log(`Maximum displacement value: ${maxDisp}`);
-
-    // Set up the LUT with a color map
-
-    lut.setColorMap(selectedColorMap); // or any other color map you prefer
-    lut.setMax(maxDisp); // set the max value from the displacement range
-    lut.setMin(minDisp); // set the min value from the displacement range
-
-    sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: new THREE.CanvasTexture(lut.createCanvas()),
-        transparent: true,
-        opacity: 0.5
-    }));
-
-    sprite.material.map.colorSpace = THREE.SRGBColorSpace;
-    sprite.scale.x = 0.1;
-    sprite.position.set(-0.1, 0, 0); // sprite position
-
-    uiScene.add(sprite);
-
-    // Create a high-resolution canvas for the text label and displacement scale
-    const canvas = document.createElement('canvas');
-    const scale = 2; // Increase scale for higher resolution
-    canvas.width = 256 * scale;
-    canvas.height = 1024 * scale; // Increased height to accommodate the scale
-    const context = canvas.getContext('2d');
-    context.scale(scale, scale); // Scale context for higher resolution
-    context.font = '24px Arial'; // Decrease font size
-    context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
-   // context.fillText('Displacement', 10, 20); // Adjust position for the smaller font
-
-    // Draw the displacement scale with max at the top and min at the bottom
-    const scaleSteps = 13; // Number of steps in the scale
-    const yOffset = 20; // Offset from the top
-    const lineLength = 20; // Length of the scale lines
-    const lineX = 50; // X position of the scale lines (adjusted)
-    const textX = 80; // X position of the text (adjusted)
-
-// Add the maximum displacement value to the top
-context.font = '30px Arial'; // Increase font size
-context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
-
-// Draw short line above max value
-context.fillRect(textX - 5, yOffset - 5, lineLength, 2);
-
-context.fillText(maxDisp.toFixed(8), textX, yOffset); // Add max value to the top
-
-for (let i = 0; i <= scaleSteps; i++) {
-    const value = minDisp + ((i / scaleSteps) * (maxDisp - minDisp));
-    const y = (canvas.height / scale) - (i / scaleSteps) * ((canvas.height / scale) ) - yOffset + 20; // Add 20 pixels of space between max value and scale
     
-    // Draw short line
-    context.fillRect(lineX, y - 5, lineLength, 2);
-    
-    // Draw the displacement value
-    context.font = '30px Arial'; // Increase font size
-    const textValue = value === 0? "0" : value.toFixed(8);
-    context.fillText(textValue, textX, y);
-}
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // Improve texture quality
 
+        // Remove the previous text sprite if it exists
+        if (textSprite) {
+            uiScene.remove(textSprite);
+        }
 
+        textSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            opacity: 1.0
+        }));
+
+        textSprite.scale.set(0.25, 1, 1); // Adjust size for the higher resolution
+        textSprite.position.set(-0.0001, 0, 0); // Position to the side of the original sprite
+        uiScene.add(textSprite);
 
     
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // Improve texture quality
 
-    // Remove the previous text sprite if it exists
-    if (textSprite) {
-        uiScene.remove(textSprite);
+
+    }else{
+        // Find the maximum and minimum displacement values
+        lines.forEach(line => {
+            const values = line.split('\t'); // tab separated
+        
+            if (values.length === 8) {
+                const dispx = parseFloat(values[5]);
+                const dispy = parseFloat(values[6]);
+                const dispz = parseFloat(values[7]);
+            
+                const displacementMagnitude = Math.sqrt(dispx * dispx + dispy * dispy + dispz * dispz);
+            
+                maxDisp = Math.max(maxDisp, displacementMagnitude);
+                minDisp = Math.min(minDisp, displacementMagnitude);
+            }
+        });
+  //      console.log(`Minimum displacement value: ${minDisp}`);
+  //      console.log(`Maximum displacement value: ${maxDisp}`);
+    
+        // **Set up the LUT with a color map**
+    
+        lut.setColorMap(selectedColorMap); // or any other color map you prefer
+        lut.setMax(maxDisp); // set the max value from the displacement range
+        lut.setMin(minDisp); // set the min value from the displacement range
+    
+        sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: new THREE.CanvasTexture(lut.createCanvas()),
+            transparent: true,
+            opacity: 0.5
+        }));
+    
+        sprite.material.map.colorSpace = THREE.SRGBColorSpace;
+        sprite.scale.x = 0.1;
+        sprite.position.set(-0.1, 0, 0); // sprite position
+    
+        uiScene.add(sprite);
+    
+        // Create a high-resolution canvas for the text label and displacement scale
+        const canvas = document.createElement('canvas');
+        const scale = 2; // Increase scale for higher resolution
+        canvas.width = 256 * scale;
+        canvas.height = 1024 * scale; // Increased height to accommodate the scale
+        const context = canvas.getContext('2d');
+        context.scale(scale, scale); // Scale context for higher resolution
+        context.font = '24px Arial'; // Decrease font size
+        context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
+      // context.fillText('Displacement', 10, 20); // Adjust position for the smaller font
+    
+        // Draw the displacement scale with max at the top and min at the bottom
+        const scaleSteps = 13; // Number of steps in the scale
+        const yOffset = 20; // Offset from the top
+        const lineLength = 20; // Length of the scale lines
+        const lineX = 50; // X position of the scale lines (adjusted)
+        const textX = 80; // X position of the text (adjusted)
+    
+        // Add the maximum displacement value to the top
+        context.font = '30px Arial'; // Increase font size
+        context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
+    
+        // Draw short line above max value
+        context.fillRect(textX - 5, yOffset - 5, lineLength, 2);
+    
+        context.fillText(maxDisp.toFixed(8), textX, yOffset); // Add max value to the top
+    
+        for (let i = 0; i <= scaleSteps; i++) {
+            const value = minDisp + ((i / scaleSteps) * (maxDisp - minDisp));
+            const y = (canvas.height / scale) - (i / scaleSteps) * ((canvas.height / scale) ) - yOffset + 20; // Add 20 pixels of space between max value and scale
+        
+            // Draw short line
+            context.fillRect(lineX, y - 5, lineLength, 2);
+        
+            // Draw the displacement value
+            context.font = '30px Arial'; // Increase font size
+            const textValue = value === 0? "0" : value.toFixed(8);
+            context.fillText(textValue, textX, y);
+        }
+    
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // Improve texture quality
+    
+        // Remove the previous text sprite if it exists
+        if (textSprite) {
+            uiScene.remove(textSprite);
+        }
+    
+        textSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            opacity: 1.0
+        }));
+    
+        textSprite.scale.set(0.25, 1, 1); // Adjust size for the higher resolution
+        textSprite.position.set(-0.0001, 0, 0); // Position to the side of the original sprite
+        uiScene.add(textSprite);
+
+
     }
 
-    textSprite = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: texture,
-        transparent: true,
-        opacity: 1.0
-    }));
-
-    textSprite.scale.set(0.25, 1, 1); // Adjust size for the higher resolution
-    textSprite.position.set(-0.0001, 0, 0); // Position to the side of the original sprite
-    uiScene.add(textSprite);
-
-    // SPHERE
+    
+    // SPHERE  !!!!!!!!!!
     lines.forEach(line => {
         const values = line.split('\t'); // tab separated
 
@@ -306,11 +408,11 @@ for (let i = 0; i <= scaleSteps; i++) {
 
             const sphere = new THREE.Mesh(geometry, defaultMaterial.clone());
 
-            // Calculate the displacement magnitude
-            const displacementMagnitude = Math.sqrt(dispx * dispx + dispy * dispy + dispz * dispz);
+            // Calculate the displacement/strain magnitude
+            const magnitude = selectedData == 'strain'? strain : Math.sqrt(dispx * dispx + dispy * dispy + dispz * dispz);
 
-            // Get the color from the LUT based on the displacement magnitude
-            const color = lut.getColor(displacementMagnitude);
+            // Get the color from the LUT based on the magnitude
+            const color = lut.getColor(magnitude);
 
             // Set the color of the sphere
             sphere.material.color = color;
