@@ -40,7 +40,6 @@ ipcRenderer.on('file-not-found2', (event, errorMessage) => {
     console.error('File not found:', errorMessage);
 });
 
-
 let i=1;
 
 let camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
@@ -107,7 +106,6 @@ function init() {
     scene2.add( axesHelper );
     currentAxis = 'none';
 
-
     radius = dx / 2; // Radius of spheres
     widthSegments = 32; // Surface parts of the sphere
     heightSegments = 32; // Height divisions of the sphere
@@ -149,9 +147,9 @@ function init() {
             fixedObjectGroup.remove(sphere);
         }
                
-       //clearLastModel();
-       console.log(i+=1);
-       // Remove the old spheres from the fixedObjectGroup
+        //clearLastModel();
+        console.log(i+=1);
+        // Remove the old spheres from the fixedObjectGroup
         while (fixedObjectGroup.children.length > 0) {
             const child = fixedObjectGroup.children[0];
             if (child instanceof THREE.Mesh) {
@@ -165,8 +163,7 @@ function init() {
         if (dx) {
         console.log('dx1:',dx);
         }
-       // console.log(lines); 
-       
+      
         animate();
         
     });
@@ -178,20 +175,18 @@ function animate() {
     // Update controls for both cameras
     controls.update();
     controls2.update();
-    
     // Update the position and target of camera2 based on camera1
     camera2.position.copy(camera.position);
     camera2.position.sub(controls.target);
     camera2.position.setLength(CAM_DISTANCE);
     camera2.lookAt(scene2.position);
-
     render();
 }
 
 
 
 function createSphere() {
-   // console.log("selectedColorMap1:", selectedColorMap);
+
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
     const defaultMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
     lut = new Lut();
@@ -234,25 +229,24 @@ function createSphere() {
         canvas.height = 1024 * scale; // Increased height to accommodate the scale
         const context = canvas.getContext('2d');
         context.scale(scale, scale); // Scale context for higher resolution
-        context.font = '24px Arial'; // Decrease font size
+        context.font = '45px Arial'; // Decrease font size
         context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
-       // context.fillText('Displacement', 10, 20); // Adjust position for the smaller font
     
         // Draw the displacement scale with max at the top and min at the bottom
-        const scaleSteps = 13; // Number of steps in the scale
+        const scaleSteps = 9; // Number of steps in the scale
         const yOffset = 20; // Offset from the top
         const lineLength = 20; // Length of the scale lines
         const lineX = 50; // X position of the scale lines (adjusted)
         const textX = 80; // X position of the text (adjusted)
     
         // Add the maximum displacement value to the top
-        context.font = '30px Arial'; // Increase font size
+        context.font = '50px Arial'; // Increase font size
         context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
     
         // Draw short line above max value
-        context.fillRect(textX - 5, yOffset - 5, lineLength, 2);
+        context.fillRect(textX - 25, yOffset - 5, lineLength, 2);
     
-        context.fillText(maxStrain.toFixed(8), textX, yOffset); // Add max value to the top
+        context.fillText(maxStrain.toExponential(2), textX, yOffset + 17); // Add max value to the top
 
         for (let i = 0; i <= scaleSteps; i++) {
             const value = minStrain + ((i / scaleSteps) * (maxStrain - minStrain));
@@ -262,8 +256,8 @@ function createSphere() {
             context.fillRect(lineX, y - 5, lineLength, 2);
 
             // Draw the displacement value
-            context.font = '30px Arial'; // Increase font size
-            const textValue = value === 0? "0" : value.toFixed(8);
+            context.font = '50px Arial'; // Increase font size
+            const textValue = value === 0? "0" : value.toExponential(2);
             context.fillText(textValue, textX, y);
         }
     
@@ -325,23 +319,23 @@ function createSphere() {
         canvas.height = 1024 * scale; // Increased height to accommodate the scale
         const context = canvas.getContext('2d');
         context.scale(scale, scale); // Scale context for higher resolution
-        context.font = '24px Arial'; // Decrease font size
+        context.font = '45px Arial'; // Decrease font size
         context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
     
         // Draw the displacement scale with max at the top and min at the bottom
-        const scaleSteps = 13; // Number of steps in the scale
+        const scaleSteps = 9; // Number of steps in the scale
         const yOffset = 20; // Offset from the top
         const lineLength = 20; // Length of the scale lines
         const lineX = 50; // X position of the scale lines (adjusted)
         const textX = 80; // X position of the text (adjusted)
     
         // Add the maximum displacement value to the top
-        context.font = '30px Arial'; // Increase font size
+        context.font = '50px Arial'; // Increase font size
         context.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set text color to black
     
         // Draw short line above max value
-        context.fillRect(textX - 5, yOffset - 5, lineLength, 2);    
-        context.fillText(maxDisp.toFixed(8), textX, yOffset); // Add max value to the top
+        context.fillRect(textX - 25, yOffset - 5, lineLength, 2);    
+        context.fillText(maxDisp.toExponential(2), textX, yOffset + 17); // Add max value to the top
     
         for (let i = 0; i <= scaleSteps; i++) {
             const value = minDisp + ((i / scaleSteps) * (maxDisp - minDisp));
@@ -349,8 +343,8 @@ function createSphere() {
             // Draw short line
             context.fillRect(lineX, y - 5, lineLength, 2);        
             // Draw the displacement value
-            context.font = '30px Arial'; // Increase font size
-            const textValue = value === 0? "0" : value.toFixed(8);
+            context.font = '50px Arial'; // Increase font size
+            const textValue = value === 0? "0" : value.toExponential(2);
             context.fillText(textValue, textX, y);
         }
         const texture = new THREE.CanvasTexture(canvas);
@@ -365,7 +359,7 @@ function createSphere() {
             transparent: true,
             opacity: 1.0
         }));
-    
+            
         textSprite.scale.set(0.25, 1, 1); // Adjust size for the higher resolution
         textSprite.position.set(-0.0001, 0, 0); // Position to the side of the original sprite
         uiScene.add(textSprite);

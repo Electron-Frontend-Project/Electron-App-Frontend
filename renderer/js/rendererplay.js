@@ -5,10 +5,22 @@ const { ipcRenderer } = require('electron');
 const jardir = path.resolve(__dirname, '../');
 
 document.addEventListener('DOMContentLoaded', () => {
-    const playbutton = document.getElementById('play-button');
+    const playButton = document.getElementById('play-button');
+    const stopButton = document.getElementById('stop-button');
+    const pauseButton = document.getElementById('pause-button');
 
-    playbutton.addEventListener('click', async () => {
+    playButton.addEventListener('click', async () => {
         console.log("Clicked play button..");
         ipcRenderer.send('start-backend', jardir);
+    });
+
+    stopButton.addEventListener('click', async () => {
+        console.log("Clicked stop button..");
+        ipcRenderer.send('stop-backend');
+    });
+
+    pauseButton.addEventListener('click', async () => {
+        console.log("Clicked pause button..");
+        ipcRenderer.send('pause-backend');
     });
 });
