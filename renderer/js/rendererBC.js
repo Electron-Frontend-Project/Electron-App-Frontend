@@ -28,17 +28,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // **to get points id**
     const addButton = document.getElementById('forcepointadd');
     addButton.addEventListener('click', () => {
-      const designVarId = 'design-var1';
-      const listContainerId = 'list-container1';
-      const list = fListsend;
-      const designvar = document.getElementById(designVarId).innerHTML;
-      const dArray = designvar.split(" ");
-      const dValue = dArray[2];
-      if (dValue != null && !list.includes(dValue)) {
-        list.push(dValue);
-        updateList(listContainerId, list); // Update the displayed list
-        fListsend = list;
-      }
+        const designVarId = 'design-var1';
+        const listContainerId = 'list-container1';
+        const list = fListsend;
+        const designvar = document.getElementById(designVarId).innerHTML;
+        const dArray = designvar.split(" ");
+        const dValue = dArray[2];
+        if (dValue != null && !list.includes(dValue)) {
+            list.push(dValue);
+            updateList(listContainerId, list); // Update the displayed list
+            fListsend = list; 
+               
+            // Send the ID of the selected sphere to rendererD.js
+            const selectedMeshID = document.getElementById("design-var1").textContent.split(": ")[1];
+            console.log("Selected Mesh ID:", selectedMeshID); // Debug log
+            ipcRenderer.send('selected-sphere', selectedMeshID);     
+        }
     });
 
     function updateList(listContainerId, list) {
@@ -53,9 +58,11 @@ document.addEventListener('DOMContentLoaded', () => {
             removeButton.textContent = "Remove";
             removeButton.addEventListener("click", (event) => {
                 event.preventDefault();
+                const removedID = list[elem];
                 // Remove the element from the list
                 delete list[elem];
                 updateList(listContainerId, list); // Update the displayed list
+                ipcRenderer.send('removed-sphere', removedID); // Send removeID to main
             });
             listItem.appendChild(removeButton);
             listContainer.appendChild(listItem);

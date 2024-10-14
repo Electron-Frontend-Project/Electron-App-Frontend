@@ -13,6 +13,25 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Clicked play button..");
         ipcRenderer.send('start-backend', jardir);
     });
+    
+    ipcRenderer.on('jar-path', (event, jarPath) => {
+        console.log(`Received JAR path: ${jarPath}`);
+    });
+
+    // Backend'den gelen stdout verilerini dinleyin ve konsola yazdırın
+    ipcRenderer.on('backend-output', (event, data) => {
+        console.log(`Backend Output: ${data}`);
+    });
+
+    // Backend'den gelen stderr verilerini dinleyin ve konsola yazdırın
+    ipcRenderer.on('backend-error', (event, data) => {
+        console.error(`Backend Error: ${data}`);
+    });
+
+    // Process'in kapanma olayını dinleyin ve konsola yazdırın
+    ipcRenderer.on('backend-close', (event, data) => {
+        console.log(data);
+    });
 
     stopButton.addEventListener('click', async () => {
         console.log("Clicked stop button..");
@@ -23,4 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Clicked pause button..");
         ipcRenderer.send('pause-backend');
     });
+
+ 
 });

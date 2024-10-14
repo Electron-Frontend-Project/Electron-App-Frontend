@@ -4,30 +4,51 @@ const os = require('os');
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.0/build/three.module.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.121.0/examples/jsm/controls/OrbitControls.js";
-
 import { Lut } from './Lut.js';
-
 import { SelectionBox } from "./SelectionBox.js";
 import { SelectionHelper } from "./SelectionHelper.js";
 
+let flag = false, clicked = 0, camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
+directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
+container, container2, lut, orthoCamera, sprite, uiScene, textSprite, complience = 0, step = 0, selectedColorMap = '', 
+selectedData = ''
+; 
 
 document.addEventListener('DOMContentLoaded', () => {
     const readFile = document.getElementById('readFileO');
     const dxInput = document.getElementById('dxInput');
+    const designPart = document.getElementById('scene-container1');
+    const topologyPart = document.getElementById('scene-container2');
+    const mainPart = document.getElementById('main-part');
+    let isDesignPartOpen = false;
+    let isTopologyPartOpen = false;
     readFile.addEventListener('click', async () => {
-        //const filePath = 'C:/Users/suuser/Desktop/PDTO4/topology/builtmesh/solidR2.msh'; // Replace with the actual file path
-       // const dirPath = "C:/Users/suuser/Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit";
-        const userDir = os.homedir();  // User dir
-        const dirPath = path.resolve(userDir, 'Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit');
-
-        ipcRenderer.send('read-file2', dirPath);
+        if (isTopologyPartOpen) {
+            topologyPart.style.width = '50%';
+            designPart.style.width = '50%';
+            mainPart.style.flexDirection = 'row';
+            isTopologyPartOpen = false;
+            disposeScene();            
+          } else {
+            topologyPart.style.width = '100%';
+            designPart.style.width = '0%';
+            mainPart.style.flexDirection = 'column';
+            isTopologyPartOpen = true;
+            clicked += 1;
+            
+            const userDir = os.homedir();  // User dir
+            const dirPath = path.resolve(userDir, 'Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit');
+            ipcRenderer.send('read-file2', dirPath);
+            init();
+          }
+          
     });
 });     
 
 // to get dx 
-let dx;
+let dx, len, wid;
 ipcRenderer.on('get-dxO', (event, data) => {    
-    dx = data;
+    ({ dx, length: len, width: wid } = data);
 });
 
 ipcRenderer.on('file-read-error2', (event, errorMessage) => {
@@ -42,12 +63,8 @@ ipcRenderer.on('file-not-found2', (event, errorMessage) => {
 
 let i=1;
 
-let camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
-directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
-container, lut, orthoCamera, sprite, uiScene, textSprite, selectedColorMap = '', selectedData = ''
-; 
 
-// **Selectring color map**
+// **Selecting color map**
 const colorMapSelect = document.getElementById('color-map-select');
 const dataSelect = document.getElementById('disp-strain-select');
 
@@ -61,7 +78,27 @@ dataSelect.addEventListener('change', (event) => {
     console.log("selected data: " + selectedData);
 });
 
-init();
+
+function disposeScene() {
+    // remove old scenes
+    scene.remove(...scene.children);
+    scene2.remove(...scene2.children);
+    uiScene.remove(...uiScene.children);
+    renderer.dispose();
+    renderer2.dispose();
+    controls.dispose();
+    controls2.dispose();
+    spheres.forEach(sphere => {
+        sphere.geometry.dispose();
+        sphere.material.dispose();
+    });
+    spheres = []; // remove spheres
+    container.removeChild(renderer.domElement); 
+    container2.removeChild(renderer2.domElement);   
+    
+}
+
+//init();
 
 function init() {
 
@@ -75,7 +112,7 @@ function init() {
   
     // Create a camera with appropriate aspect ratio and size
     container = document.querySelector('.topology-part');   
-    const container2 = document.querySelector('.corner-boxO');
+    container2 = document.querySelector('.corner-boxO');
     const width = container.clientWidth;
     const height = container.clientHeight;
     const width2 = container2.clientWidth;
@@ -87,7 +124,8 @@ function init() {
 	orthoCamera.position.set( 0.75, 0, 1 );
 
     CAM_DISTANCE = 10;
-    camera.position.z = 40;
+    const area = Math.sqrt(Math.pow(len, 2) + Math.pow(wid, 2));
+    camera.position.z = 30 + dx/area;
     renderer = new THREE.WebGLRenderer({ alpha: true }); 
     renderer2 = new THREE.WebGLRenderer({ alpha: true }); 
     renderer.setClearColor( 0x000000, 0 ); // background color
@@ -134,7 +172,7 @@ function init() {
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
         renderer.setSize(width, height);
-  
+
         const name = fileData.name;
         const data = fileData.content;
        
@@ -182,7 +220,6 @@ function animate() {
     camera2.lookAt(scene2.position);
     render();
 }
-
 
 
 function createSphere() {
@@ -279,7 +316,7 @@ function createSphere() {
         textSprite.position.set(-0.0001, 0, 0); // Position to the side of the original sprite
         uiScene.add(textSprite);
 
-    }else{
+    } else{
         // Find the maximum and minimum displacement values
         lines.forEach(line => {
             const values = line.split('\t'); // tab separated
@@ -378,6 +415,8 @@ function createSphere() {
             const dispy = parseFloat(values[6]);
             const dispz = parseFloat(values[7]);
 
+            complience = complience + strain;
+
             const sphere = new THREE.Mesh(geometry, defaultMaterial.clone());
 
             // Calculate the displacement/strain magnitude
@@ -409,9 +448,9 @@ function createSphere() {
             sphere.strain = strain;
             spheres.push(sphere);
             fixedObjectGroup.add(sphere);
+           
         }
-    });
-
+    });   
     // clean up
     geometry.dispose();
     defaultMaterial.dispose();
@@ -478,7 +517,6 @@ function render() {
     scene.remove(sphere); 
     
 }
-
 
 
 

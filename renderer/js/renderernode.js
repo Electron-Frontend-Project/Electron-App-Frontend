@@ -1,7 +1,7 @@
 const { ipcRenderer } = require('electron');
 
 document.addEventListener('DOMContentLoaded', () => {
-    const playbutton = document.getElementById('readFileDD');
+    const playbutton = document.getElementById('readFileD');
 
     playbutton.addEventListener('click', async () => {
        
