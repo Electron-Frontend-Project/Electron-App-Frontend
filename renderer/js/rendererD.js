@@ -46,12 +46,13 @@ ipcRenderer.on('get-dxD', (event, data) => {
     ({ dx, length: len, width: wid } = data);
 });
 
-// to get selected mesh IDs (orange)
+// to get selected sphere IDs (orange)
 ipcRenderer.on('selected-spheres', (event, selectedMeshID) => {
     console.log('Received selectedMeshID in main process:', selectedMeshID); // Debugging log
     selectedSphereIDs.push(selectedMeshID);
 });
 
+// to get removed sphere IDs
 ipcRenderer.on('removed-spheres', (event, removedID) => {
     console.log('Received removedID in main process:', removedID); // Debugging log
     removedSphereIDs.push(removedID);
@@ -61,15 +62,15 @@ ipcRenderer.on('removed-spheres', (event, removedID) => {
         console.log(`Removed ID from removedID: ${removedID}`);
     }
     
-    // Eski rengine döndürme kodu
+    // rechange color of removed spheres
     spheres.forEach(sphere => {
         if (sphere.designvar === removedID) {
-            // Rengi yeşil olarak değiştir
+            // change color to green
             sphere.material.emissive.set(sphere.currentHex);
             
-            // infoBox'u gizle
+            // do not display infoBox
             document.getElementById("info-box1").style.display='none';
-            // INTERSECTED değişkenini güncelle
+            // update INTERSECTED 
             if (INTERSECTED === sphere) {
                 INTERSECTED = null;
             }
@@ -98,7 +99,6 @@ ipcRenderer.on('file-data1', (event, data) => {
     console.log(lines[0]);
 
     if (flag) {
-        // Sahneyi temizle, kontrolleri sıfırla
         disposeScene();
         flag = false;
     } else {
@@ -107,7 +107,7 @@ ipcRenderer.on('file-data1', (event, data) => {
     }
 });
 
-
+// **Remove old scenes and models, spheres**
 function disposeScene() {
     // remove old scenes
     scene.remove(...scene.children);
@@ -120,7 +120,7 @@ function disposeScene() {
         sphere.geometry.dispose();
         sphere.material.dispose();
     });
-    spheres = []; // spheres dizisini temizle
+    spheres = []; 
     container.removeChild(renderer.domElement);
     container2.removeChild(renderer2.domElement);
     if (selectionBox.dispose) {
@@ -158,8 +158,7 @@ function initScene(lines) {
         50
     );	
     const area = Math.sqrt(Math.pow(len, 2) + Math.pow(wid, 2));
-    camera.zoom = 15 + dx/area;  // BURADA CAMERA AYARI VE DX, LEN VE WID ORANINA GÖRE
-    camera.updateProjectionMatrix();
+    camera.zoom = 15 + dx/area;  //  for camera setting according to DX, LEN and WID 
     camera2 = new THREE.OrthographicCamera(
         width2 / -2,
         width2 / 2,
@@ -350,7 +349,7 @@ function initScene(lines) {
         if (intersects.length > 0) {
             if (INTERSECTED != intersects[0].object) {
                 if (INTERSECTED && !selectedSphereIDs.includes(INTERSECTED.designvar)) {
-                    INTERSECTED.material.emissive.set(INTERSECTED.currentHex); // Burada renk yeşile döndürülüyor!!!!
+                    INTERSECTED.material.emissive.set(INTERSECTED.currentHex); // change the color here (green)
                 }
                 INTERSECTED = intersects[0].object;
                 INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();

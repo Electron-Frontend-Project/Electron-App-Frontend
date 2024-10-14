@@ -78,9 +78,8 @@ dataSelect.addEventListener('change', (event) => {
     console.log("selected data: " + selectedData);
 });
 
-
+// **Remove old scenes and models, spheres**
 function disposeScene() {
-    // remove old scenes
     scene.remove(...scene.children);
     scene2.remove(...scene2.children);
     uiScene.remove(...uiScene.children);
@@ -92,7 +91,7 @@ function disposeScene() {
         sphere.geometry.dispose();
         sphere.material.dispose();
     });
-    spheres = []; // remove spheres
+    spheres = []; 
     container.removeChild(renderer.domElement); 
     container2.removeChild(renderer2.domElement);   
     
@@ -125,7 +124,7 @@ function init() {
 
     CAM_DISTANCE = 10;
     const area = Math.sqrt(Math.pow(len, 2) + Math.pow(wid, 2));
-    camera.position.z = 30 + dx/area;
+    camera.position.z = 30 + dx/area;  // for camera setting according to DX, LEN and WID 
     renderer = new THREE.WebGLRenderer({ alpha: true }); 
     renderer2 = new THREE.WebGLRenderer({ alpha: true }); 
     renderer.setClearColor( 0x000000, 0 ); // background color
