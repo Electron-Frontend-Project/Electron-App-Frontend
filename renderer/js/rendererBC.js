@@ -127,12 +127,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Submit.addEventListener('click', async (event) => {
         event.preventDefault();
-    console.log("submit hereeeeeeeeee");
-    forceComponents();
-    updateList('list-container1', fListsend); // Update the list before calling handleSendButtonClick()
-    await new Promise(resolve => setTimeout(resolve, 100)); // wait for the list to be updated
-    handleSendButtonClick(); // assign result to designVarList
-    bcComponents();
+        console.log("submit hereeeeeeeeee");
+        forceComponents();
+        updateList('list-container1', fListsend); // Update the list before calling handleSendButtonClick()
+        await new Promise(resolve => setTimeout(resolve, 100)); // wait for the list to be updated
+        handleSendButtonClick(); // assign result to designVarList
+        bcComponents();
       
         f['points'] = fListsend;
         if (fListsend && fListsend.length > 0) {

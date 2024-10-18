@@ -8,7 +8,7 @@ import { Lut } from './Lut.js';
 import { SelectionBox } from "./SelectionBox.js";
 import { SelectionHelper } from "./SelectionHelper.js";
 
-let flag = false, clicked = 0, camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
+let flag = false, isInitStopped = false, clicked = 0, camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
 directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
 container, container2, lut, orthoCamera, sprite, uiScene, textSprite, complience = 0, step = 0, selectedColorMap = '', 
 selectedData = ''
@@ -28,20 +28,20 @@ document.addEventListener('DOMContentLoaded', () => {
             designPart.style.width = '50%';
             mainPart.style.flexDirection = 'row';
             isTopologyPartOpen = false;
-            disposeScene();            
-          } else {
+            // Send a message to main.js to stop watching the directory
+            ipcRenderer.send('stop-watching'); 
+            disposeScene();           
+        } else {
             topologyPart.style.width = '100%';
             designPart.style.width = '0%';
             mainPart.style.flexDirection = 'column';
             isTopologyPartOpen = true;
-            clicked += 1;
-            
+            clicked += 1;            
             const userDir = os.homedir();  // User dir
             const dirPath = path.resolve(userDir, 'Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit');
             ipcRenderer.send('read-file2', dirPath);
-            init();
-          }
-          
+            init();           
+        }          
     });
 });     
 
@@ -91,16 +91,20 @@ function disposeScene() {
         sphere.geometry.dispose();
         sphere.material.dispose();
     });
+
     spheres = []; 
     container.removeChild(renderer.domElement); 
     container2.removeChild(renderer2.domElement);   
-    
+
 }
 
 //init();
 
 function init() {
 
+    if (isInitStopped) {
+        return; // to stop function
+    }
     spheres = [];   
     scene = new THREE.Scene();  
     scene2 = new THREE.Scene();

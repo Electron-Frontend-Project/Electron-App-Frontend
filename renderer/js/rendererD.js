@@ -239,7 +239,7 @@ function initScene(lines) {
             spheres.push(sphere);     
         }        
     });
-//     ** Select Box **
+//  ** Select Box for BC **
     selectedMeshes = [];
     isOrbitControlEnabled = true;
     // document.getElementById('forceareaadd').addEventListener('click', onPickAreaClick, false);
@@ -311,14 +311,11 @@ function initScene(lines) {
                 const selectedSphere = allSelected[i];
                 selectedSphere.material.color.set(0xff0000);
                 selectedMeshes.push(selectedSphere.designvar);
-             //   console.log("selected meshes: " + selectedSphere.designvar);
             }
         }
-      //  selectedMeshes.forEach(sphere => {
-      //     console.log(sphere.designvar);
-      // });
     });
-//     * Send selectedMeshes list to HTML ** 
+    
+//  ** Send selectedMeshes list to HTML ** 
     document.getElementById('bcSubmit').addEventListener('click', function() {
         sendDesignVarInfo(selectedMeshes);
     });
@@ -326,6 +323,110 @@ function initScene(lines) {
         const designVarList = meshes.map(mesh => mesh.designvar).join('<br>');
         document.getElementById('list').innerHTML = designVarList;
     }
+
+
+
+
+
+
+
+
+
+/*
+
+//  ** Select Box for Force **
+    var selectedMeshesForce = [];
+    var isOrbitControlEnabledF = true;
+   
+    document.getElementById('forceareaadd').addEventListener('click', onPickAreaClickF, false);
+    function onPickAreaClickF() {
+        isOrbitControlEnabledF = !isOrbitControlEnabledF;
+        controls.enabled = isOrbitControlEnabledF;
+    }
+    document.getElementById('clearselectedforce').addEventListener('click', clearSelectedSpheresF, false);
+    // Function to clear selected spheres
+    function clearSelectedSpheresF() {
+        // Iterate through selectedMeshes and reset their colors
+        selectedMeshesForce.forEach((sphere) => {
+            if (sphere.material && sphere.material.emissive) {
+                sphere.material.color.set(0x00ff00);
+            } 
+        });
+        // Clear the selectedMeshes array
+        selectedMeshesForce = [];
+        console.log("selected meshes after clear (F): " + selectedMeshesForce);
+    }
+    var selectionBoxF = new SelectionBox(camera, scene);
+    var helperF = new SelectionHelper(renderer, 'sel_box');
+    designPart = document.querySelector('.design-part');
+    document.addEventListener('pointerdown', function (event) {
+        if (!isOrbitControlEnabledF) {
+            for (const item of selectionBoxF.collection) {
+                item.material.color.set(0xff0000);
+            }
+            const designPartRect = designPart.getBoundingClientRect();
+            selectionBox.startPoint.set(
+                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
+                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
+                0.5
+            );
+        }
+    });
+    document.addEventListener('pointermove', function (event) {
+        if (!isOrbitControlEnabledF && helperF.isDown) {
+            for (let i = 0; i < selectionBoxF.collection.length; i++) {
+                selectionBoxF.collection[i].material.color.set(0xff0000);
+            }
+            const designPartRect = designPart.getBoundingClientRect();
+            selectionBoxF.endPoint.set(
+                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
+                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
+                0.5
+            );
+            const allSelected = selectionBoxF.select();
+            for (let i = 0; i < allSelected.length; i++) {
+                const selectedSphere = allSelected[i];
+                selectedSphere.material.color.set(0xff0000);
+                selectedMeshesForce.push(selectedSphere);
+            }        
+        }
+    });
+    document.addEventListener('pointerup', function (event) {
+        if (!isOrbitControlEnabledF) {
+            const designPartRect = designPart.getBoundingClientRect();
+            selectionBoxF.endPoint.set(
+                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
+                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
+                0.5
+            );
+            const allSelected = selectionBox.select();
+            for (let i = 0; i < allSelected.length; i++) {
+                const selectedSphere = allSelected[i];
+                selectedSphere.material.color.set(0xff0000);
+                selectedMeshesForce.push(selectedSphere.designvar);
+            }
+        }
+    });
+    
+//  ** Send selectedMeshes list to HTML ** 
+    document.getElementById('bcSubmit').addEventListener('click', function() {
+        sendDesignVarInfo(selectedMeshesForce);
+    });
+    function sendDesignVarInfo(meshes) {
+        const designVarList = meshes.map(mesh => mesh.designvar).join('<br>');
+        document.getElementById('list').innerHTML = designVarList;
+    }
+
+
+
+
+*/
+
+
+
+
+
+    
     geometry.dispose();
     camera.position.z = 30;
     
@@ -377,8 +478,7 @@ function initScene(lines) {
         } else {
             // Hide the text box if no mesh is clicked
             infoBox.style.display='none';
-        }
-        
+        }        
     }
     
     function animate() {        

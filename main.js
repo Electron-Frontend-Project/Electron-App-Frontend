@@ -8,12 +8,10 @@ const fs = require('fs');
 const { spawn } = require('child_process');
 
 
-
-
 const isDev = process.env.NODE_ENV !== 'production';
 const isMac = process.platform === 'darwin';
 
-
+let serverProcess = null;
 
 let mainWindow;
 
@@ -60,10 +58,9 @@ function createMainWindow() {
         }
     }); 
 
+    const chokidar = require('chokidar');
+    let watcher; // Declare watcher variable
 
-
-
-    const chokidar = require('chokidar'); // to watch the directory
     ipcMain.on('read-file2', (event, dirPath) => {
         try {
             watchDirectory(event, dirPath);
@@ -71,17 +68,23 @@ function createMainWindow() {
             event.sender.send('file-read-error2', err.message);
         }
     });
-    
+
+    // Function to start watching the directory
     function watchDirectory(event, dirPath) {
-        const watcher = chokidar.watch(dirPath, {
+        // If a watcher already exists, don't create a new one
+        if (watcher) {
+            console.log('Watcher already exists.');
+            return;
+        }
+
+        watcher = chokidar.watch(dirPath, {
             ignored: /(^|[\/\\])\../, // Dot files ignore
             persistent: true,
         });
-    
+
         console.log(`Listening was started: ${dirPath}`);
-    
+
         const handleFileAdded = (filePath) => {
-            // Introduce a delay before attempting to read the file
             setTimeout(async () => {
                 try {
                     console.log("Reading file:", filePath);
@@ -90,17 +93,27 @@ function createMainWindow() {
                 } catch (err) {
                     event.sender.send('file-read-error2', err.message);
                 }
-            }, 1000); // Adjust the delay duration (1 sec = 1000 millisec)
+            }, 1000);
         };
-    
-        // Listener
+
         watcher.on('add', handleFileAdded);
-    
         watcher.on('ready', () => {
             console.log('Listening started. Waiting...');
         });
     }
-    
+
+    // Listen for the stop-watching message
+    ipcMain.on('stop-watching', () => {
+        console.log('Received stop-watching message from rendererO.js');
+        if (watcher) {
+            watcher.close(); // Stop watching
+            watcher = null; // Clear the watcher variable
+            console.log('Stopped watching the directory.');
+        } else {
+            console.log('No watcher to stop.');
+        }
+    });
+
     async function readFileAsync(filePath) {
         try {
             const data = await fs.promises.readFile(filePath, 'utf-8');
@@ -110,48 +123,6 @@ function createMainWindow() {
         }
     }
 
-    ////  to read .msh file
-    //ipcMain.on('read-file2', async (event, dirPath) => {
-    //    try {
-    //        const files = await readAndSortFiles(dirPath);
-    //        for (const name of files) {
-    //            const filePath = path.join(dirPath, name);
-    //            console.log("Reading file:", name);
-    //            const data = await readFileAsync(filePath);
-    //            event.sender.send('file-data2', { name, content: data });
-    //        }
-    //    } catch (err) {
-    //        event.sender.send('file-read-error2', err.message);
-    //    }   
-    //});  
-    //async function readAndSortFiles(dirPath) {
-    //    return new Promise((resolve, reject) => {
-    //        fs.readdir(dirPath, (err, files) => {
-    //            if (err) {
-    //                reject(err);
-    //            } else {
-    //                files.sort((a, b) => {
-    //                    const aNumber = parseInt(a.match(/\d+/)[0]);
-    //                    const bNumber = parseInt(b.match(/\d+/)[0]);
-    //                    return aNumber - bNumber;
-    //                });
-    //                resolve(files);
-    //            }
-    //        });
-    //    });
-    //}
-   
-    //async function readFileAsync(filePath) {
-    //    return new Promise((resolve, reject) => {
-    //        fs.readFile(filePath, 'utf-8', (err, data) => {
-    //            if (err) {
-    //                reject(err);
-    //            } else {
-    //                resolve(data);
-    //            }
-    //        });
-    //    });
-    //}
 
     let server; // Declare a variable to store the server instance
     let responseData = {}; // Initialize responseData with an empty object
@@ -159,14 +130,24 @@ function createMainWindow() {
  
     // to send dx for radius
     ipcMain.on('send-dxD', (event, data) => {
-        const {dx} = data;
-        event.sender.send('get-dxD', dx);
-        console.log("sending dx...");
+        const { dx, length, width } = data;
+        const responseData = { dx, length, width };
+        event.sender.send('get-dxD', responseData);
+        console.log("sending dx, length, width...", length, width);
     });
+
     ipcMain.on('send-dxO', (event, data) => {
-        const {dx} = data;
-        event.sender.send('get-dxO', dx);
-        console.log("sending dx...");
+        const { dx, length, width } = data;
+        const responseData = { dx, length, width };
+        event.sender.send('get-dxO', responseData);
+        console.log("sending dx, length, width...", length, width);
+    });
+    // to send selected meshes (orange)
+    ipcMain.on('selected-sphere', (event, selectedMeshID) => {  
+        event.sender.send('selected-spheres', selectedMeshID); 
+    });
+    ipcMain.on('removed-sphere', (event, removedID) => {  
+        event.sender.send('removed-spheres', removedID); 
     });
 
     ipcMain.on('fetch-data', async (event, data) => { 
@@ -207,25 +188,58 @@ function createMainWindow() {
             console.log(`API server is running on http://localhost:${appPort}/api/try`);
         });
     }
-    // play button java -jar file.jar   
-    var ps = require("child_process");
-    ipcMain.on('start-backend', async (event, jardir) =>{
-        let server = jardir + '/demo1-0.0.1-SNAPSHOT.jar';
-        console.log(`Launching server with jar ${server}...`);
-        serverProcess = ps.spawn('java', ['-jar', server]);
-        // backend process
-        serverProcess.stdout.on('data', (data) => {
-            console.log(`${data}`);
-        });
-        
-        serverProcess.stderr.on('data', (data) => {
-            console.error(`Server Error: ${data}`);
-        });
-        
-        serverProcess.on('close', (code) => {
-            console.log(`Server Process exited with code ${code}`);
-        });
+const ps = require("child_process");
+let serverProcess = null; // Global variable
+
+ipcMain.on('start-backend', async (event, jardir) => {
+    let server = jardir + '/demo1-0.0.1-SNAPSHOT.jar';
+    console.log(`Launching server with jar ${server}...`);
+    
+    serverProcess = ps.spawn('java', ['-jar', server]);
+    event.reply('jar-path', server); // to get jar path
+
+    // backend process
+    serverProcess.stdout.on('data', (data) => {
+        console.log(`${data}`);
+        event.reply('backend-output', `${data}`);
     });
+    
+    serverProcess.stderr.on('data', (data) => {
+        console.error(`Server Error: ${data}`);
+        event.reply('backend-error', `${data}`);
+    });
+    
+    serverProcess.on('close', (code) => {
+        console.log(`Server Process exited with code ${code}`);
+        event.reply('backend-close', `Process exited with code ${code}`);
+        serverProcess = null; 
+    });
+});
+
+// PAUSE Button
+const io = require('socket.io')(8080); // port 8080 server start
+io.on('connection', (socket) => {
+    console.log('a user connected');
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
+});
+
+ipcMain.on('pause-backend', () => {
+    io.emit('pause-message', 'Pause message sent from Electron main process');
+});
+
+// STOP Button
+ipcMain.on('stop-backend', () => {
+    console.log('Stopping Java jar file...');
+    if (serverProcess) {
+        serverProcess.kill(); // Kill process
+        serverProcess = null; // Null
+    } else {
+        console.log('No server process to stop.');
+    }
+});
+
 
     // send BC parameters to backend
     ipcMain.on('send-BCparams', async (event, data) =>{
@@ -245,9 +259,10 @@ function createMainWindow() {
         }
        
     });
+    return mainWindow;
 }
 
-app.whenReady().then(() => {     //when the app is ready, creates the main func
+app.whenReady().then(() => {  //when the app is ready, creates the main function
     createMainWindow();
 
     const template = [
