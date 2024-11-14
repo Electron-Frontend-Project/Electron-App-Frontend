@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var fListsend = [];
     var forceDict = {};
     var bcDict = {};
+    var designVarForceList = [];
     var designVarList= [];
    
     const f = {};
@@ -46,28 +47,97 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function updateList(listContainerId, list) {
+    // New array to hold IDs selected in handleSendButtonClickForce
+    var selectedForceIDs = [];
+    
+    function handleSendButtonClickForce() {
+        const listFElementHTML = document.getElementById('forcelist').innerHTML;
+        const designVarForceListTemp = listFElementHTML.split('<br>');
+        const nonEmptyDesignVarFListTemp = designVarForceListTemp.map(item => item.trim()).filter(item => item !== ''); // Filter out empty elements
+        const uniqueDesignVarFSetTemp = new Set(nonEmptyDesignVarFListTemp);
+        const uniqueDesignVarFListTemp = Array.from(uniqueDesignVarFSetTemp);
+        
+        designVarForceList = uniqueDesignVarFListTemp.length > 0 ? uniqueDesignVarFListTemp : [];
+        console.log("forcelist: " + designVarForceList.length);
+    
+        // Add IDs to fListsend and selectedForceIDs
+        designVarForceList.forEach(id => {
+            if (!fListsend.includes(id)) {
+                fListsend.push(id);
+            }
+            // Also add to selectedForceIDs
+            if (!selectedForceIDs.includes(id)) {
+                selectedForceIDs.push(id);
+            }
+        });
+    
+        // Send the updated list to ipcRenderer
+        ipcRenderer.send('selected-sphere', fListsend); 
+     
+        // Call updateList with isForceList set to true to avoid showing remove buttons
+        updateList('list-container1', fListsend, true); // Pass true to isForceList
+    }
+    
+    // Modify updateList to only show items not in selectedForceIDs
+    function updateList(listContainerId, list, isForceList = false) {
         const listContainer = document.getElementById(listContainerId);
         // Clear existing list
         listContainer.innerHTML = "";
+    
         // Create a list of elems and remove buttons
-        for (const elem in list) {
+        for (const elem of list) {
+            // Skip items in selectedForceIDs
+            if (selectedForceIDs.includes(elem)) {
+                continue; // Skip this iteration if the item is in selectedForceIDs
+            }
+        
             const listItem = document.createElement("li");
-            listItem.textContent = list[elem];
-            const removeButton = document.createElement("button");
-            removeButton.textContent = "Remove";
-            removeButton.addEventListener("click", (event) => {
-                event.preventDefault();
-                const removedID = list[elem];
-                // Remove the element from the list
-                delete list[elem];
-                updateList(listContainerId, list); // Update the displayed list
-                ipcRenderer.send('removed-sphere', removedID); // Send removeID to main
-            });
-            listItem.appendChild(removeButton);
+            listItem.textContent = elem;
+        
+            // Only add remove button if it's not a force list
+            if (!isForceList) {
+                const removeButton = document.createElement("button");
+                removeButton.textContent = "Remove";
+                removeButton.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    // Remove the element from the list
+                    const removedID = elem;
+                    list.splice(list.indexOf(removedID), 1); // Remove from list
+                    updateList(listContainerId, list); // Update the displayed list
+                    ipcRenderer.send('removed-sphere', removedID); // Send removeID to main
+                });
+                listItem.appendChild(removeButton);
+            }
+        
             listContainer.appendChild(listItem);
         }
     }
+
+    // Clear button for Force (area)
+    const clearSelectedForceButton = document.getElementById('clearselectedforce');
+    clearSelectedForceButton.addEventListener('click', () => {
+        selectedForceIDs.forEach(id => {
+            const index = fListsend.indexOf(id);
+            if (index !== -1) {
+                fListsend.splice(index, 1); // Remove ID
+            }
+        });
+        // clear selectedForceIDs list
+        selectedForceIDs = [];
+
+        // Update the list
+        updateList('list-container1', fListsend);
+
+        // Send removed ID's to  ipcRenderer
+        ipcRenderer.send('removed-spheres', selectedForceIDs);
+    });
+
+
+
+
+    
+
+
 
     // **to get force components values**
     function forceComponents() {
@@ -85,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("forceDict: ", forceDict);
     }
 
-    //  **to get sphere ids in selected area**
+    //  **to get sphere ids in selected area for BC**
     function handleSendButtonClick() {
         const listElementHTML = document.getElementById('list').innerHTML;
         const designVarListTemp = listElementHTML.split('<br>');
@@ -127,13 +197,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Submit.addEventListener('click', async (event) => {
         event.preventDefault();
-        console.log("submit hereeeeeeeeee");
+        console.log("submit here!");
+        await new Promise(resolve => setTimeout(resolve, 100));
+        handleSendButtonClickForce();
         forceComponents();
         updateList('list-container1', fListsend); // Update the list before calling handleSendButtonClick()
-        await new Promise(resolve => setTimeout(resolve, 100)); // wait for the list to be updated
+        await new Promise(resolve => setTimeout(resolve, 100)); // wait for the list to be updated        
         handleSendButtonClick(); // assign result to designVarList
         bcComponents();
-      
         f['points'] = fListsend;
         if (fListsend && fListsend.length > 0) {
           f['points'] = fListsend.filter(point => point!== null);
