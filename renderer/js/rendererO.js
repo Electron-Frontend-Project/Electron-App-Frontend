@@ -78,25 +78,31 @@ dataSelect.addEventListener('change', (event) => {
     console.log("selected data: " + selectedData);
 });
 
-// **Remove old scenes and models, spheres**
 function disposeScene() {
-    scene.remove(...scene.children);
-    scene2.remove(...scene2.children);
-    uiScene.remove(...uiScene.children);
+    // Remove all children from the scenes
+    while (scene.children.length > 0) {
+        const child = scene.children[0];
+        if (child instanceof THREE.Mesh) {
+            child.geometry.dispose();
+            child.material.dispose();
+        }
+        scene.remove(child);
+    }
+    while (scene2.children.length > 0) {
+        const child = scene2.children[0];
+        if (child instanceof THREE.Mesh) {
+            child.geometry.dispose();
+            child.material.dispose();
+        }
+        scene2.remove(child);
+    }
+    // Dispose of the renderer and controls
     renderer.dispose();
     renderer2.dispose();
     controls.dispose();
     controls2.dispose();
-    spheres.forEach(sphere => {
-        sphere.geometry.dispose();
-        sphere.material.dispose();
-    });
-
-    spheres = []; 
-    container.removeChild(renderer.domElement); 
-    container2.removeChild(renderer2.domElement);   
-
 }
+
 
 //init();
 
@@ -511,14 +517,22 @@ function onCanvasClick(event) {
 }
 
 function render() {
-    createSphere();
-    renderer.render( scene, camera );
+    // Clear the previous spheres before creating new ones
+    if (spheres.length > 0) {
+        spheres.forEach(sphere => {
+            fixedObjectGroup.remove(sphere);
+            sphere.geometry.dispose();
+            sphere.material.dispose();
+        });
+        spheres = []; // Clear the array
+    }
+    
+    createSphere(); // Create new spheres based on the latest data
+    renderer.render(scene, camera);
     renderer.autoClearColor = false;
-    renderer.render( uiScene, orthoCamera );
+    renderer.render(uiScene, orthoCamera);
     renderer.autoClearColor = true;
     renderer2.render(scene2, camera2);
-    scene.remove(sphere); 
-    
 }
 
 
