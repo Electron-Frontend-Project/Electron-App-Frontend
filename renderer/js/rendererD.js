@@ -243,7 +243,7 @@ function initScene(lines) {
 
     
 
-//  ** Select Box for BC **
+    //  ** Select Box for BC **
     selectedMeshes = [];
     isOrbitControlEnabled = true;
    
@@ -258,12 +258,11 @@ function initScene(lines) {
         } else {
             button.style.backgroundColor = ''; // Change back to the original color
         }
-
         isOrbitControlEnabled = !isOrbitControlEnabled;
         controls.enabled = isOrbitControlEnabled;
     }
 
-    document.getElementById('clearselectedsphere').addEventListener('click', clearSelectedSpheres, false);
+    document.getElementById('clearselectedbc').addEventListener('click', clearSelectedSpheres, false);
     // Function to clear selected spheres
     function clearSelectedSpheres() {
         // Iterate through selectedMeshes and reset their colors
@@ -327,16 +326,17 @@ function initScene(lines) {
                 selectedSphere.material.color.set(0xff0000);
                 selectedMeshes.push(selectedSphere.designvar);
             }
+           
         }
     });
     
-//  ** Send selectedMeshes list to HTML for BC** 
+    //  ** Send selectedMeshes list to HTML for BC** 
     document.getElementById('bcSubmit').addEventListener('click', function() {
         sendDesignVarInfoBC(selectedMeshes);
     });
     function sendDesignVarInfoBC(meshes) {
         const designVarList = meshes.map(mesh => mesh.designvar).join('<br>');
-        document.getElementById('list').innerHTML = designVarList;
+        document.getElementById('bclist').innerHTML = designVarList;
     }
 
 
@@ -352,7 +352,7 @@ function initScene(lines) {
 
 
 
-//  ** Select Box for Force **
+    //  ** Select Box for Force **
     var selectedMeshesForce = [];
     var isOrbitControlEnabledF = true;  
    
@@ -422,6 +422,7 @@ function initScene(lines) {
             }        
         }
     });
+    
     document.addEventListener('pointerup', function (event) {
         if (!isOrbitControlEnabledF) {
             const designPartRect = designPart.getBoundingClientRect();
@@ -435,14 +436,15 @@ function initScene(lines) {
                 const selectedSphere = allSelected[i];
                 selectedSphere.material.color.set(0x0000ff);
                 selectedMeshesForce.push(selectedSphere.designvar);
-            }
+            }           
         }
-    });
-    
-//  ** Send selectedMeshes list to HTML for Force** 
+       
+    });    
+    //  ** Send selectedMeshes list to HTML for Force** 
     document.getElementById('bcSubmit').addEventListener('click', function() {
         sendDesignVarInfoF(selectedMeshesForce);
-    });
+    }); 
+
     function sendDesignVarInfoF(meshes) {
         const designVarList = meshes.map(mesh => mesh.designvar).join('<br>');
         document.getElementById('forcelist').innerHTML = designVarList;
@@ -522,12 +524,12 @@ function initScene(lines) {
         camera2.lookAt(scene2.position);
         render();
     }
+
     animate();  
     flag = true;
     function render() {
         renderer.render(scene, camera);
         renderer2.render(scene2, camera2);
-    }
-       
+    }       
 }
 
