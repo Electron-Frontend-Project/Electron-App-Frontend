@@ -240,224 +240,127 @@ function initScene(lines) {
         }        
     });
 
-
     
-
-    //  ** Select Box for BC **
-    selectedMeshes = [];
-    isOrbitControlEnabled = true;
-   
-    document.getElementById('bcareaadd').addEventListener('click', onPickAreaClick, false);
-    function onPickAreaClick() {
-
-        const button = document.getElementById('bcareaadd'); // Get the button
-
-        // Change the button color directly
-        if (button.style.backgroundColor === 'rgb(0, 123, 255)' || button.style.backgroundColor === '') { // Check if the current color is the default
-            button.style.backgroundColor = 'red'; // Change to a new color
-        } else {
-            button.style.backgroundColor = ''; // Change back to the original color
+    // Pick/Add area for Force and BC
+    class SelectionManager {
+        constructor(camera, scene, renderer, buttonId, clearButtonId, listId, defaultColor, selectedColor) {
+            this.camera = camera;
+            this.scene = scene;
+            this.renderer = renderer;
+            this.selectionBox = new SelectionBox(camera, scene);
+            this.helper = new SelectionHelper(renderer, 'sel_box');
+            this.designPart = document.querySelector('.design-part');
+            this.selectedMeshes = [];
+            this.isOrbitControlEnabled = true;
+            this.defaultColor = defaultColor;
+            this.selectedColor = selectedColor;
+    
+            this.initButton(buttonId);
+            this.initClearButton(clearButtonId);
+            this.listId = listId;
+    
+            this.addEventListeners();
         }
-        isOrbitControlEnabled = !isOrbitControlEnabled;
-        controls.enabled = isOrbitControlEnabled;
-    }
-
-    document.getElementById('clearselectedbc').addEventListener('click', clearSelectedSpheres, false);
-    // Function to clear selected spheres
-    function clearSelectedSpheres() {
-        // Iterate through selectedMeshes and reset their colors
-        selectedMeshes.forEach((sphere) => {
-            if (sphere.material && sphere.material.emissive) {
-                sphere.material.color.set(0x00ff00);
+    
+        initButton(buttonId) {
+            const button = document.getElementById(buttonId);
+            button.addEventListener('click', () => {
+                this.toggleOrbitControl(button);
+            });
+        }
+    
+        initClearButton(clearButtonId) {
+            document.getElementById(clearButtonId).addEventListener('click', () => {
+                this.clearSelectedMeshes();
+            });
+        }
+    
+        toggleOrbitControl(button) {
+            if (button.style.backgroundColor === 'rgb(0, 123, 255)' || button.style.backgroundColor === '') {
+                button.style.backgroundColor = this.selectedColor;
             } else {
-              //  console.error("Material or emissive property is undefined for the sphere:", sphere);
+                button.style.backgroundColor = '';
             }
-        });
-        // Clear the selectedMeshes array
-        selectedMeshes = [];
-        console.log("selected meshes after clear: " + selectedMeshes);
-    }
-    selectionBox = new SelectionBox(camera, scene);
-    helper = new SelectionHelper(renderer, 'sel_box');
-    designPart = document.querySelector('.design-part');
-    document.addEventListener('pointerdown', function (event) {
-        if (!isOrbitControlEnabled) {
-            for (const item of selectionBox.collection) {
-                item.material.color.set(0xff0000);
-            }
-            const designPartRect = designPart.getBoundingClientRect();
-            selectionBox.startPoint.set(
-                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
-                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
-                0.5
-            );
+            this.isOrbitControlEnabled = !this.isOrbitControlEnabled;
+            controls.enabled = this.isOrbitControlEnabled;
         }
-    });
-    document.addEventListener('pointermove', function (event) {
-        if (!isOrbitControlEnabled && helper.isDown) {
-            for (let i = 0; i < selectionBox.collection.length; i++) {
-                selectionBox.collection[i].material.color.set(0xff0000);
-            }
-            const designPartRect = designPart.getBoundingClientRect();
-            selectionBox.endPoint.set(
-                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
-                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
-                0.5
-            );
-            const allSelected = selectionBox.select();
-            for (let i = 0; i < allSelected.length; i++) {
-                const selectedSphere = allSelected[i];
-                selectedSphere.material.color.set(0xff0000);
-                selectedMeshes.push(selectedSphere);
-            }        
-        }
-    });
-    document.addEventListener('pointerup', function (event) {
-        if (!isOrbitControlEnabled) {
-            const designPartRect = designPart.getBoundingClientRect();
-            selectionBox.endPoint.set(
-                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
-                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
-                0.5
-            );
-            const allSelected = selectionBox.select();
-            for (let i = 0; i < allSelected.length; i++) {
-                const selectedSphere = allSelected[i];
-                selectedSphere.material.color.set(0xff0000);
-                selectedMeshes.push(selectedSphere.designvar);
-            }
-           
-        }
-    });
     
-    //  ** Send selectedMeshes list to HTML for BC** 
-    document.getElementById('bcSubmit').addEventListener('click', function() {
-        sendDesignVarInfoBC(selectedMeshes);
-    });
-    function sendDesignVarInfoBC(meshes) {
-        const designVarList = meshes.map(mesh => mesh.designvar).join('<br>');
-        document.getElementById('bclist').innerHTML = designVarList;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //  ** Select Box for Force **
-    var selectedMeshesForce = [];
-    var isOrbitControlEnabledF = true;  
-   
-    document.getElementById('forceareaadd').addEventListener('click', onPickAreaClickF, false);
-
-    function onPickAreaClickF() {
-
-        const button = document.getElementById('forceareaadd'); // Get the button
-
-        // Change the button color directly
-        if (button.style.backgroundColor === 'rgb(0, 123, 255)' || button.style.backgroundColor === '') { // Check if the current color is the default
-            button.style.backgroundColor = 'blue'; // Change to a new color
-        } else {
-            button.style.backgroundColor = ''; // Change back to the original color
+        clearSelectedMeshes() {
+            this.selectedMeshes.forEach((sphere) => {
+                if (sphere.material) {
+                    sphere.material.color.set(this.defaultColor);
+                }
+            });
+            this.selectedMeshes = [];
+            console.log("Selected meshes cleared:", this.selectedMeshes);
         }
-
-        isOrbitControlEnabledF = !isOrbitControlEnabledF;
-        controls.enabled = isOrbitControlEnabledF;
-    }
-
-    document.getElementById('clearselectedforce').addEventListener('click', clearSelectedSpheresF, false);
-   
-    // Function to clear selected spheres
-    function clearSelectedSpheresF() {
-        // Iterate through selectedMeshes and reset their colors
-        selectedMeshesForce.forEach((sphere) => {
-            if (sphere.material && sphere.material.emissive) {
-                sphere.material.color.set(0x00ff00);
-            } 
-        });
-        // Clear the selectedMeshes array
-        selectedMeshesForce = [];
-        console.log("selected meshes after clear (F): " + selectedMeshesForce);
-    }
-    var selectionBoxF = new SelectionBox(camera, scene);
-    var helperF = new SelectionHelper(renderer, 'sel_box');
-    designPart = document.querySelector('.design-part');
-    document.addEventListener('pointerdown', function (event) {
-        if (!isOrbitControlEnabledF) {
-            for (const item of selectionBoxF.collection) {
-                item.material.color.set(0x0000ff);
-            }
-            const designPartRect = designPart.getBoundingClientRect();
-            selectionBox.startPoint.set(
-                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
-                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
-                0.5
-            );
-        }
-    });
-    document.addEventListener('pointermove', function (event) {
-        if (!isOrbitControlEnabledF && helperF.isDown) {
-            for (let i = 0; i < selectionBoxF.collection.length; i++) {
-                selectionBoxF.collection[i].material.color.set(0x0000ff);
-            }
-            const designPartRect = designPart.getBoundingClientRect();
-            selectionBoxF.endPoint.set(
-                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
-                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
-                0.5
-            );
-            const allSelected = selectionBoxF.select();
-            for (let i = 0; i < allSelected.length; i++) {
-                const selectedSphere = allSelected[i];
-                selectedSphere.material.color.set(0x0000ff);
-                selectedMeshesForce.push(selectedSphere);
-            }        
-        }
-    });
     
-    document.addEventListener('pointerup', function (event) {
-        if (!isOrbitControlEnabledF) {
-            const designPartRect = designPart.getBoundingClientRect();
-            selectionBoxF.endPoint.set(
-                (event.clientX - designPartRect.left) / designPartRect.width * 2 - 1,
-                -(event.clientY - designPartRect.top) / designPartRect.height * 2 + 1,
-                0.5
-            );
-            const allSelected = selectionBoxF.select();
-            for (let i = 0; i < allSelected.length; i++) {
-                const selectedSphere = allSelected[i];
-                selectedSphere.material.color.set(0x0000ff);
-                selectedMeshesForce.push(selectedSphere.designvar);
-            }           
+        addEventListeners() {
+            document.addEventListener('pointerdown', (event) => this.onPointerDown(event));
+            document.addEventListener('pointermove', (event) => this.onPointerMove(event));
+            document.addEventListener('pointerup', (event) => this.onPointerUp(event));
         }
-       
-    });    
-    //  ** Send selectedMeshes list to HTML for Force** 
-    document.getElementById('bcSubmit').addEventListener('click', function() {
-        sendDesignVarInfoF(selectedMeshesForce);
-    }); 
-
-    function sendDesignVarInfoF(meshes) {
-        const designVarList = meshes.map(mesh => mesh.designvar).join('<br>');
-        document.getElementById('forcelist').innerHTML = designVarList;
+    
+        onPointerDown(event) {
+            if (!this.isOrbitControlEnabled) {
+                for (const item of this.selectionBox.collection) {
+                    item.material.color.set(this.selectedColor);
+                }
+                const rect = this.designPart.getBoundingClientRect();
+                this.selectionBox.startPoint.set(
+                    (event.clientX - rect.left) / rect.width * 2 - 1,
+                    -(event.clientY - rect.top) / rect.height * 2 + 1,
+                    0.5
+                );
+            }
+        }
+    
+        onPointerMove(event) {
+            if (!this.isOrbitControlEnabled && this.helper.isDown) {
+                const rect = this.designPart.getBoundingClientRect();
+                this.selectionBox.endPoint.set(
+                    (event.clientX - rect.left) / rect.width * 2 - 1,
+                    -(event.clientY - rect.top) / rect.height * 2 + 1,
+                    0.5
+                );
+                const allSelected = this.selectionBox.select();
+                allSelected.forEach((sphere) => {
+                    sphere.material.color.set(this.selectedColor);
+                    this.selectedMeshes.push(sphere);
+                });
+            }
+        }
+    
+        onPointerUp(event) {
+            if (!this.isOrbitControlEnabled) {
+                const rect = this.designPart.getBoundingClientRect();
+                this.selectionBox.endPoint.set(
+                    (event.clientX - rect.left) / rect.width * 2 - 1,
+                    -(event.clientY - rect.top) / rect.height * 2 + 1,
+                    0.5
+                );
+                const allSelected = this.selectionBox.select();
+                allSelected.forEach((sphere) => {
+                    sphere.material.color.set(this.selectedColor);
+                    this.selectedMeshes.push(sphere);
+                });
+            }
+        }
+    
+        sendSelectedMeshesToHTML() {
+            const designVarList = this.selectedMeshes.map(mesh => mesh.designvar).join('<br>');
+            document.getElementById(this.listId).innerHTML = designVarList;
+        }
     }
-
-
-
-
-
-
-
-
-
+    
+    // ** Create Managers for BC and Force **
+    const bcManager = new SelectionManager(camera, scene, renderer, 'bcareaadd', 'clearselectedbc', 'bclist', 0x00ff00, 'red');
+    const forceManager = new SelectionManager(camera, scene, renderer, 'forceareaadd', 'clearselectedforce', 'forcelist', 0x00ff00, 'blue');
+    
+    // Submit Buttons
+    document.getElementById('bcSubmit').addEventListener('click', () => bcManager.sendSelectedMeshesToHTML());
+    document.getElementById('bcSubmit').addEventListener('click', () => forceManager.sendSelectedMeshesToHTML());
+    
 
     
     geometry.dispose();
