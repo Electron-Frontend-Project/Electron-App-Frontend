@@ -10,19 +10,43 @@ import { SelectionHelper } from "./SelectionHelper.js";
 let flag = false, scene, scene2, renderer, renderer2, container, container2, width, width2, height, height2, CAM_DISTANCE, camera, camera2,
 controls, controls2, axesHelper, spheres, facesPlanes, fixedObjectGroup, ambientLight, directionalLight, radius, widthSegments,
 heightSegments, geometry, defaultMaterial, currentAxis, x, y, z, strain, designvar, dispx, dispy, dispz, sphere, selectedMeshes, 
-isOrbitControlEnabled, selectionBox, helper, designPart, raycaster 
+isOrbitControlEnabled, selectionBox, helper, designPart, raycaster, dx
 ;
 var INTERSECTED;
 const selectedSphereIDs = [];
 const removedSphereIDs = [];
+let selectedFilePath = null;
+var i=0;
 
 document.addEventListener('DOMContentLoaded', () => {
-    const readFile = document.getElementById('readFileDD');
+    const sendFileButton = document.getElementById('sendFileButton');
+    // click button
+    sendFileButton.addEventListener('click', (event) => {
+        // ask file path from main
+        console.log("clicked1")
+        ipcRenderer.send('request-file-path');
+    });
+
+    ipcRenderer.on('response-file-path', (event, filePath) => {
+        console.log("Selected file: ", filePath);
+        selectedFilePath = filePath;
+    });
+
+  /*  dx formula !!!!
+
+    xx = coord[1][0] - coord[0][0],
+    yy = coord[1][1] - coord[0][1],
+    zz = coord[1][2] - coord[0][2];
+    
+    dx = Math.sqrt(xx*xx + yy*yy + zz*zz);
+*/
+
+    const readSelectedFile = document.getElementById('readSelectedFileD');
     const designPart = document.getElementById('scene-container1');
     const topologyPart = document.getElementById('scene-container2');
     const mainPart = document.getElementById('main-part');
     let isDesignPartOpen = false;
-    readFile.addEventListener('click', async () => {
+    readSelectedFile.addEventListener('click', async () => {
         if (isDesignPartOpen) {
             designPart.style.width = '50%';
             topologyPart.style.width = '50%';
@@ -34,16 +58,19 @@ document.addEventListener('DOMContentLoaded', () => {
             mainPart.style.flexDirection = 'column';
             isDesignPartOpen = true;
         }
-        const userDir = os.homedir();
-        const filePath = path.resolve(userDir, 'Desktop/PDTO-GitHub/PDTO-Project/topology/builtmeshallit/solid1.msh');
-        ipcRenderer.send('read-file1', filePath);
+        
+        ipcRenderer.send('read-selected-file1', selectedFilePath)
     });
 });
 
-var i=0;
-let dx, len, wid;
-ipcRenderer.on('get-dxD', (event, data) => {    
-    ({ dx, length: len, width: wid } = data);
+ipcRenderer.on('selected-file-read-error1', (event, errorMessage) => {
+    // Handle the file read error here in the renderer process
+    console.error('File read error:', errorMessage);
+});
+
+ipcRenderer.on('selected-file-not-found1', (event, errorMessage) => {
+    // Handle the file not found error here in the renderer process
+    console.error('File not found:', errorMessage);
 });
 
 // to get selected sphere IDs (orange)
@@ -78,23 +105,51 @@ ipcRenderer.on('removed-spheres', (event, removedID) => {
     });
 });
 
-ipcRenderer.on('file-read-error1', (event, errorMessage) => {
-    // Handle the file read error here in the renderer process
-    console.error('File read error:', errorMessage);
-});
 
-ipcRenderer.on('file-not-found1', (event, errorMessage) => {
-    // Handle the file not found error here in the renderer process
-    console.error('File not found:', errorMessage);
-});
-
-ipcRenderer.on('file-data1', (event, data) => {
+ipcRenderer.on('selected-file-data1', (event, data) => {
     // Handle the received data here in the renderer process
     const lines = data.split('\n');
+   console.log("toplam: ", lines.length)
+   if (lines.length >= 2) {
+    console.log("First line: ", lines[0]);
+    console.log("Second line: ", lines[1]);
+
+    // take x,y,z coords from first line
+    const coord1 = lines[0]
+        .trim()
+        .split('\t')
+        .slice(0, 3)
+        .map(val => parseFloat(val.trim())); // remove empty spaces
+
+    // take x,y,z coords from second line
+    const coord2 = lines[1]
+        .trim()
+        .split('\t')
+        .slice(0, 3)
+        .map(val => parseFloat(val.trim())); // remove empty spaces
+
+    console.log("Parsed coord1: ", coord1);
+    console.log("Parsed coord2: ", coord2);
+
+    // check whether coords are read correctly
+    if (coord1.every(val => !isNaN(val)) && coord2.every(val => !isNaN(val))) {
+        // find dx 
+        const xx = coord2[0] - coord1[0];
+        const yy = coord2[1] - coord1[1];
+        const zz = coord2[2] - coord1[2];
+        dx = Math.sqrt(xx * xx + yy * yy + zz * zz);
+
+        console.log(`dx: ${dx}`);
+        
+    } else {
+        console.error('Coordinates are missing or incorrect.');
+    }
+} else {
+    console.error('Not enough lines found.');
+}    
     if (dx) {
         console.log('dx:', dx);
-        console.log('len: ', len);
-        console.log('wid: ', wid);
+      
     }
     if (flag) {
         disposeScene();
@@ -105,26 +160,43 @@ ipcRenderer.on('file-data1', (event, data) => {
     }
 });
 
+
 // **Remove old scenes and models, spheres**
 function disposeScene() {
-    // remove old scenes
+    // Remove old scenes
     scene.remove(...scene.children);
     scene2.remove(...scene2.children);
-    renderer.dispose();
-    renderer2.dispose();
+    
+    // Dispose of the renderers if they exist
+    if (renderer) {
+        renderer.dispose();
+        if (container.contains(renderer.domElement)) {
+            container.removeChild(renderer.domElement);
+        }
+    }
+    
+    if (renderer2) {
+        renderer2.dispose();
+        if (container2.contains(renderer2.domElement)) {
+            container2.removeChild(renderer2.domElement);
+        }
+    }
+
     controls.dispose();
     controls2.dispose();
+    
+    // Dispose of spheres
     spheres.forEach(sphere => {
         sphere.geometry.dispose();
         sphere.material.dispose();
     });
     spheres = []; 
-    container.removeChild(renderer.domElement);
-    container2.removeChild(renderer2.domElement);
-    if (selectionBox.dispose) {
+
+    // Dispose of selection box and helper if they exist
+    if (selectionBox && selectionBox.dispose) {
         selectionBox.dispose();
     }
-    if (helper.dispose) {
+    if (helper && helper.dispose) {
         helper.dispose();
     }
 }
@@ -154,8 +226,8 @@ function initScene(lines) {
         0.1,
         50
     );	
-    const area = Math.sqrt(Math.pow(len, 2) + Math.pow(wid, 2));
-    camera.zoom = 15 + dx/area;  //  for camera setting according to DX, LEN and WID 
+  
+    camera.zoom = 15 + dx;  
     camera2 = new THREE.OrthographicCamera(
         width2 / -2,
         width2 / 2,
@@ -164,7 +236,7 @@ function initScene(lines) {
         0.1,
         50
     ); 
-    camera2.zoom = 10 + dx/area;
+    camera2.zoom = 10 + dx;
     camera2.updateProjectionMatrix();
     renderer = new THREE.WebGLRenderer(); 
     renderer2 = new THREE.WebGLRenderer(); 

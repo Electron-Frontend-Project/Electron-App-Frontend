@@ -13,22 +13,22 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Clicked play button..");
         ipcRenderer.send('start-backend', jardir);
     });
-    
+        
     ipcRenderer.on('jar-path', (event, jarPath) => {
         console.log(`Received JAR path: ${jarPath}`);
     });
 
-    // Backend'den gelen stdout verilerini dinleyin ve konsola yazdırın
+    // Listen to the stdout data from the backend and run it to the console
     ipcRenderer.on('backend-output', (event, data) => {
         console.log(`Backend Output: ${data}`);
     });
 
-    // Backend'den gelen stderr verilerini dinleyin ve konsola yazdırın
+    // Listen to the stderr data from the backend and run it to the console
     ipcRenderer.on('backend-error', (event, data) => {
         console.error(`Backend Error: ${data}`);
     });
 
-    // Process'in kapanma olayını dinleyin ve konsola yazdırın
+    // Listen to the process shutdown event and run it to the console
     ipcRenderer.on('backend-close', (event, data) => {
         console.log(data);
     });
@@ -42,6 +42,4 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Clicked pause button..");
         ipcRenderer.send('pause-backend');
     });
-
- 
 });

@@ -11,13 +11,43 @@
     <link rel="stylesheet" href="css/style.css" />
 
     <script src="js/renderer.js" type="module"></script>
-
+   
     <title>PDTO</title>
   </head>
-  <body>   
+  <body>  
+    
+    
+    
     <nav class="sidebar">
       <ul>
+
+
+
+
+
+        
+      
+        
+
+
+
         <li>
+
+          <div class="sidebar-item" id="readFile">
+            <p class="title">Read File</p>
+            <ul>
+              <li>
+                <button id="sendFileButton">Send File Path to Renderer</button>
+                <script src="js/rendererFileD.js" type="module"></script>
+                <script src="js/rendererBuiltorRead.js" type="module"></script>
+              </li>            
+            </ul>
+          </div>
+
+
+
+
+
           <div class="sidebar-item" id="pre-process">
             <p class="title">Pre-Processing</p>
             <ul>
@@ -26,8 +56,7 @@
               </li>
               <li>
                 <script src="js/rendererBC.js" type="module"></script>
-                <button id="boundary" >Boundary Conditions</button>
-                  
+                <button id="boundary" >Boundary Conditions</button>                  
               </li>
             </ul>
           </div>
@@ -89,7 +118,6 @@
           <div class="sidebar-item" id="button-group">
             <script src="js/rendererplay.js" type="module"></script>
             <script src="js/rendererIGES.js" type="module"></script>
-       <!--      <script src="js/rendererSocketClient.js" type="module"></script> -->
             <ul>
               <li>
                 <button input="button" id="play-button" class="play-button"></button> 
@@ -106,8 +134,6 @@
       </ul>
     </nav>
 
-
-
     <!-- Dialog window for Boundary Condition parameters-->
     <dialog id="force-bc">
       <form>
@@ -119,7 +145,6 @@
           <div id="list-container1"></div>
           <button id="forcepointadd" type="button">Add point</button>
           <button id="forceareaadd" type="button">Add area</button>
-       <!--   <button id="forcesurfaceadd" type="button">Add surface</button> --> 
           <button id="clearselectedforce" type="button">Clear</button>
           <p id="forcelist" style="display: none;"></p>
           <p>2. Force Component: </p>
@@ -180,6 +205,7 @@
         </div>
       
         <button  id="readFileDD">Read File</button>
+        <button  id="readSelectedFileD">Read Selected File</button>
         <script type="module" src="js/renderernode.js" ></script>
         <script type="module" src="js/rendererD.js" ></script>  
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -203,14 +229,14 @@
           <p id="displacement2"></p>
         </div>
         <button  id="readFileO">Read File</button>
+        <button  id="readSelectedFileO">Read Selected File</button>
         <script type="module" src="js/rendererO.js" ></script>  
         <script type="module" src="js/renderernode.js" ></script>        
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <span class="topology-text" style="margin-left: 10px; color: #7d7d7d;">Optimum Topology</span>
         <div class="corner-boxO"></div>
 
-        <!-- Create a button with a dropdown menu -->
-       
+        <!-- Create a button with a dropdown menu -->       
         <div style="display: flex; flex-direction: row;">
           <form id="form2">
             <select id="disp-strain-select" >
@@ -240,10 +266,7 @@
         </div>
       </div>
     </div>
-
-
-
-    
+ 
     <div id="sel_box"></div>
 
     <div class="bottom-part">
