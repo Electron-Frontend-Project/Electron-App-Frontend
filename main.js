@@ -16,6 +16,8 @@ let watcher; // Declare watcher variable
 let server; // Declare a variable to store the server instance
 let responseData = {}; // Initialize responseData with an empty object
 let bcresponseData = {};
+let fetchDataResponse = {}; // fetch-data için ayrı veri yapısı
+let readFileResponse = {}; // send-readFile için ayrı veri yapısı
 let serverProcess = null;
 let mainWindow;
 let template;
@@ -224,6 +226,18 @@ function createMainWindow() {
         event.sender.send('get-dxO', responseData);
         console.log("sending dx, length, width...", length, width);
     });
+    ipcMain.on('send-dxFileD', (event, data) => {
+        const { rmin, volfrac, dx } = data;
+        const responseData = { rmin, volfrac, dx };
+        event.sender.send('get-dxFileD', responseData);
+        console.log("sending dx...", dx);
+    });
+    ipcMain.on('send-dxFileO', (event, data) => {
+        const { dx } = data;
+        const responseData = { dx };
+        event.sender.send('get-dxFileO', responseData);
+        console.log("sending dx...", dx);
+    });
     // to send selected meshes (orange)
     ipcMain.on('selected-sphere', (event, selectedMeshID) => {  
         event.sender.send('selected-spheres', selectedMeshID); 
@@ -234,7 +248,7 @@ function createMainWindow() {
     ipcMain.on('fetch-data', async (event, data) => { 
         const { rmin, dx, volfrac, length, width, thick, ndivx, ndivy, ndivz } = data;   
         // Update responseData with the new input values
-        responseData = data;    
+        const responseData = data;    
         app.get('/api/try', (req, res) => {
             res.json(responseData); // Send the updated data in the response
         });
@@ -341,13 +355,13 @@ function createMainWindow() {
    
    // Listen for the 'send-readFile' event from the renderer process
     ipcMain.on('send-readFile', async (event, data) => {
-        const { readFlag, readFilePath } = data;
+        const { rmin, volfrac, readFlag, readFilePath } = data;
 
         console.log("Received from renderer process:");
         console.log("readFlag:", readFlag);
         console.log("readFilePath:", readFilePath);
 
-        responseData = data;    
+        const responseData = data;    
         app.post('/api/readFile', (req, res) => {
             res.json(responseData); // Send the updated data in the response
         });

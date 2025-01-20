@@ -2,6 +2,7 @@ const { ipcRenderer } = require('electron');
 
 let readFilePath = ''; // Variable to store the file path
 let readFlag = false; // Flag to indicate whether a file has been selected
+let rmin, volfrac;
 
 // Listen for the file path response from the main process
 ipcRenderer.on('response-file-path', (event, filePath) => {
@@ -14,6 +15,9 @@ ipcRenderer.on('response-file-path', (event, filePath) => {
 document.addEventListener('DOMContentLoaded', () => {
     const sendFileButton = document.getElementById('sendFileButton');
     let i = 0; // Click count
+    const rminInput = document.getElementById('rminInput');
+    const volfracInput = document.getElementById('volFracInput');
+    const fetchButton = document.getElementById('fetchButton');
 
     sendFileButton.addEventListener('click', async () => {
         // First, show the current file path
@@ -41,6 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Click count: ", i);
        
     });
+
+    fetchButton.addEventListener('click', async () => {
+        rmin = parseFloat(rminInput.value);
+        volfrac = parseFloat(volfracInput.value);          
+        console.log("rmin: ", rmin, " volfrac: ", volfrac);
+    });
 });
 
 // Listen for the file path response from the main process
@@ -51,6 +61,6 @@ ipcRenderer.on('response-file-path', (event, filePath) => {
         console.log("File selection completed. Selected file: ", filePath);
 
         // Send the current states to the main process
-        ipcRenderer.send('send-readFile', { readFlag, readFilePath });
+        ipcRenderer.send('send-readFile', { rmin, volfrac, readFlag, readFilePath });
     }
 });

@@ -9,11 +9,11 @@ import { Lut } from './Lut.js';
 let flag = false, isInitStopped = false, clicked = 0, camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
 directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
 container, container2, lut, orthoCamera, sprite, uiScene, textSprite, complience = 0, step = 0, selectedColorMap = '', 
-selectedData = '',  dx, len, wid
+selectedData = '', dx
 ; 
 
 document.addEventListener('DOMContentLoaded', () => {
-    const readFile = document.getElementById('readFileO');
+    const readFile = document.getElementById('readSelectedFileO');
     const dxInput = document.getElementById('dxInput');
     const designPart = document.getElementById('scene-container1');
     const topologyPart = document.getElementById('scene-container2');
@@ -43,10 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });     
 
-// to get dx 
-ipcRenderer.on('get-dxO', (event, data) => {    
-    ({ dx, length: len, width: wid } = data);
+// to get dx form user
+ipcRenderer.on('get-dxFileO', (event, data) => {     
+    ({ dx: dx } = data);
+    console.log("dx from rendererFileO ", dx );
 });
+
+
+
 ipcRenderer.on('file-read-error2', (event, errorMessage) => {
     // Handle the file read error here in the renderer process
     console.error('File read error:', errorMessage);
@@ -55,6 +59,7 @@ ipcRenderer.on('file-not-found2', (event, errorMessage) => {
     // Handle the file not found error here in the renderer process
     console.error('File not found:', errorMessage);
 });
+
 
 let i=1;
 
@@ -70,6 +75,7 @@ dataSelect.addEventListener('change', (event) => {
     selectedData = event.target.value;
     console.log("selected data: " + selectedData);
 });
+
 
 function disposeScene() {
     // Remove all children from the scenes
@@ -118,10 +124,11 @@ function init() {
     camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); 
     camera2 = new THREE.PerspectiveCamera(75, width2 / height2, 0.1, 1000);       
     orthoCamera = new THREE.OrthographicCamera( - 1, width / height , 1, - 1, 1, 2 );
-	orthoCamera.position.set( 0.75, 0, 1 );
+    orthoCamera.position.set( 0.75, 0, 1 );
     CAM_DISTANCE = 10;
-    const area = Math.sqrt(Math.pow(len, 2) + Math.pow(wid, 2));
-    camera.position.z = 30 + dx/area;  // for camera setting according to DX, LEN and WID 
+   //const area = Math.sqrt(Math.pow(len, 2) + Math.pow(wid, 2));
+   //camera.position.z = 30 + dx/area;  // for camera setting according to DX, LEN and WID 
+    camera.position.z = 30;
     renderer = new THREE.WebGLRenderer({ alpha: true }); 
     renderer2 = new THREE.WebGLRenderer({ alpha: true }); 
     renderer.setClearColor( 0x000000, 0 ); // background color
@@ -185,12 +192,12 @@ function init() {
         // Handle the received data here in the renderer process
         lines = data.split('\n');
         console.log("lines size: "+ lines.length );
-        if (dx) {
-        console.log('dx1:',dx);
-        }     
+           
         animate();        
     });
 }
+
+
 
 function animate() {
     
@@ -205,6 +212,7 @@ function animate() {
     camera2.lookAt(scene2.position);
     render();
 }
+
 
 function createSphere() {
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
@@ -475,21 +483,5 @@ function render() {
     renderer.autoClearColor = true;
     renderer2.render(scene2, camera2);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

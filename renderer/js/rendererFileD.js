@@ -10,7 +10,7 @@ import { SelectionHelper } from "./SelectionHelper.js";
 let flag = false, scene, scene2, renderer, renderer2, container, container2, width, width2, height, height2, CAM_DISTANCE, camera, camera2,
 controls, controls2, axesHelper, spheres, facesPlanes, fixedObjectGroup, ambientLight, directionalLight, radius, widthSegments,
 heightSegments, geometry, defaultMaterial, currentAxis, x, y, z, strain, designvar, dispx, dispy, dispz, sphere, selectedMeshes, 
-isOrbitControlEnabled, selectionBox, helper, designPart, raycaster, dx
+isOrbitControlEnabled, selectionBox, helper, designPart, raycaster, dx, dx2
 ;
 var INTERSECTED;
 const selectedSphereIDs = [];
@@ -63,6 +63,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// to get dx form user
+ipcRenderer.on('get-dxFileD', (event, data) => {    
+    ({ dx: dx } = data);
+    console.log("dx2 from rendererFileD ", dx );
+});
+
+
 ipcRenderer.on('selected-file-read-error1', (event, errorMessage) => {
     // Handle the file read error here in the renderer process
     console.error('File read error:', errorMessage);
@@ -109,27 +116,28 @@ ipcRenderer.on('removed-spheres', (event, removedID) => {
 ipcRenderer.on('selected-file-data1', (event, data) => {
     // Handle the received data here in the renderer process
     const lines = data.split('\n');
-   console.log("toplam: ", lines.length)
-   if (lines.length >= 2) {
-    console.log("First line: ", lines[0]);
-    console.log("Second line: ", lines[1]);
-
-    // take x,y,z coords from first line
-    const coord1 = lines[0]
+    console.log("toplam: ", lines.length)
+    if (lines.length >= 2) {
+        console.log("First line: ", lines[0]);
+        console.log("Second line: ", lines[1]);
+        
+        // take x,y,z coords from first line (skip the first element which is id)
+        const coord1 = lines[0]
         .trim()
         .split('\t')
-        .slice(0, 3)
+        .slice(1, 4) // Skip the first element (id) and take the next three (x, y, z)
         .map(val => parseFloat(val.trim())); // remove empty spaces
 
-    // take x,y,z coords from second line
+    // take x,y,z coords from second line (skip the first element which is id)
     const coord2 = lines[1]
         .trim()
         .split('\t')
-        .slice(0, 3)
+        .slice(1, 4) // Skip the first element (id) and take the next three (x, y, z)
         .map(val => parseFloat(val.trim())); // remove empty spaces
 
     console.log("Parsed coord1: ", coord1);
     console.log("Parsed coord2: ", coord2);
+
 
     // check whether coords are read correctly
     if (coord1.every(val => !isNaN(val)) && coord2.every(val => !isNaN(val))) {
@@ -137,9 +145,11 @@ ipcRenderer.on('selected-file-data1', (event, data) => {
         const xx = coord2[0] - coord1[0];
         const yy = coord2[1] - coord1[1];
         const zz = coord2[2] - coord1[2];
-        dx = Math.sqrt(xx * xx + yy * yy + zz * zz);
+        dx2 = Math.sqrt(xx * xx + yy * yy + zz * zz);
+        // Round dx to one decimal place
+        dx2 = parseFloat(dx2.toFixed(1));
 
-        console.log(`dx: ${dx}`);
+        console.log(`dx2: ${dx2}`);
         
     } else {
         console.error('Coordinates are missing or incorrect.');
@@ -147,10 +157,17 @@ ipcRenderer.on('selected-file-data1', (event, data) => {
 } else {
     console.error('Not enough lines found.');
 }    
-    if (dx) {
-        console.log('dx:', dx);
+    if (dx2) {
+        console.log('dx2:', dx2);
       
     }
+    // Compare the two dx values
+    if (dx !== dx2) {
+        alert(`The calculated dx2 value (${dx2}) is different from the user-entered dx value (${dx}).`);
+    } else {
+        alert("The calculated dx value is the same as the user-entered dx2 value.");
+    }
+
     if (flag) {
         disposeScene();
         flag = false;
@@ -159,7 +176,6 @@ ipcRenderer.on('selected-file-data1', (event, data) => {
         flag = true;
     }
 });
-
 
 // **Remove old scenes and models, spheres**
 function disposeScene() {
@@ -274,15 +290,16 @@ function initScene(lines) {
     // SPHERE
     lines.forEach(line => {
         const values = line.split('\t'); // tab separated
-        if (values.length === 8) {
-            x = parseFloat(values[0]);
-            y = parseFloat(values[1]);
-            z = parseFloat(values[2]);
-            strain = parseFloat(values[3]);
-            designvar = values[4];
-            dispx = parseFloat(values[5]);
-            dispy = parseFloat(values[6]);
-            dispz = parseFloat(values[7]);        
+        if (values.length === 4) {
+            x = parseFloat(values[1]);
+            y = parseFloat(values[2]);
+            z = parseFloat(values[3]);
+            strain = 0;
+            designvar = values[0]; // ID
+           
+            dispx = 0;
+            dispy = 0;
+            dispz = 0;        
             sphere = new THREE.Mesh(geometry, defaultMaterial.clone());        
             switch (currentAxis) {
                 case 'x':
