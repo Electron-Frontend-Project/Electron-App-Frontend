@@ -9,7 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css" />
-
+    <script type="module" src="js/renderernode.js" ></script>
+    <script type="module" src="js/rendererD.js" ></script>  
     <script src="js/renderer.js" type="module"></script>
    
     <title>PDTO</title>
@@ -22,27 +23,31 @@
       <ul>
         <li>
           <div class="sidebar-item" id="readFile">
-            <p class="title">Read File</p>
+            <p class="title">Read Mesh File</p>
             <ul>
               <li>
-                <button id="sendFileButton">Send File Path to Renderer</button>
+                <button id="sendFileButton">Render Mesh</button>
+                <button  id="readSelectedFileD">Read mesh</button>
                 <script src="js/rendererFileD.js" type="module"></script>
                 <script src="js/rendererBuiltorRead.js" type="module"></script>
               </li>            
             </ul>
           </div>
           <div class="sidebar-item" id="pre-process">
-            <p class="title">Pre-Processing</p>
+        <!--    <p class="title">Pre-Processing</p>   --> 
+        <p class="title">Boundary Conditions</p>
             <ul>
-              <li>
+         <!--     <li>
                 <button type="button">Material Properties</button>
               </li>
+              --> 
               <li>
                 <script src="js/rendererBC.js" type="module"></script>
                 <button id="boundary" >Boundary Conditions</button>                  
               </li>
             </ul>
           </div>
+<!-- 
           <div class="sidebar-item" id="opti-method">
             <p class="title">Optimization Method</p>
             <ul>
@@ -57,6 +62,11 @@
               </li>
             </ul>
           </div>
+-->
+
+
+
+
           <div class="sidebar-item" id="opti-parameters">
             <p class="title">Optimization Parameters</p>
             <ul>
@@ -68,17 +78,21 @@
                 <label for="volfrac-label" style="font-size: 14px;">Volume Fraction</label>
                 <input type="number" name="volfrac-label" id="volFracInput" style="width: 50px;"></input></p>
               </li>
-              
+              <li>
+                <label for="dx-label" style="font-size: 14px;">dx</label>
+                <input type="number" name="volfrac-label" id="dxInput" style="width: 30px;"></input></p>
+              </li>
+              <li>
+                <button id="fetchButton" >Submit</button>
+
+              </li>
             </ul>
           </div>
     
           <div class="sidebar-item" id="manu-cons">
-            <p class="title">Particle Discretization Parameters</p>
+            <p class="title">Built Mesh Parameters</p>
             <ul>
-              <li>
-                <label for="volfrac-label" style="font-size: 14px;">dx</label>
-                <input type="number" name="volfrac-label" id="dxInput" style="width: 30px;"></input></p>
-              </li>
+             
               <li>
                 <label for="volfrac-label" style="font-size: 14px;">length</label>
                 <input type="number" name="volfrac-label" id="lengthInput" style="width: 30px;"></input></p>
@@ -92,7 +106,7 @@
                 <input type="number" name="volfrac-label" id="thickInput" style="width: 30px;"></input></p>
               </li>
               <li>
-                <button id="fetchButton" >Submit</button>
+                <button  id="readFileDD">Built mesh</button>
                 <div id="dataDisplay"></div>
               </li>
             </ul>
@@ -124,7 +138,7 @@
           <div class="modal-header1">
             <h1>Force</h1>
           </div>
-          <p>1. Select points: </p>
+          <p>1. Select force: </p>
           <div id="list-container1"></div>
           <button id="forcepointadd" type="button">Add point</button>
           <button id="forceareaadd" type="button">Add area</button>
@@ -151,10 +165,10 @@
           <div class="modal-header2">
             <h1>BC</h1>
           </div>
-          <p>1. Select area: </p>
+          <p>1. Select boundary conditions: </p>
           <div id="list-container2"></div>
-          <button id="bcpointadd" type="button">Pick point</button>
-          <button id="bcareaadd" type="button">Pick area</button>         
+          <button id="bcpointadd" type="button">Add point</button>
+          <button id="bcareaadd" type="button">Add area</button>         
           <button id="clearselectedbc" type="button">Clear</button>
           <div id="spherelist" class="spherelist">
             <p id="bclist" style="display: none;"></p>
@@ -172,6 +186,19 @@
             </ul>
           </div>
         </fieldset>
+
+        <fieldset>
+          <div class="modal-header3">
+            <h1>Passive</h1>
+          </div>
+          <p>1. Select passive: </p>
+          <div id="list-container3"></div>
+          <button id="passivepointadd" type="button">Add point</button>
+          <button id="passiveareaadd" type="button">Add area</button>
+          <button id="clearselectedpassive" type="button">Clear</button>
+          <p id="passivelist" style="display: none;"></p>
+        </fieldset>
+
         <button id="bcSubmit" type="button">Submit</button>
         <button id="closeDialog" type="button">Close</button>
       </form>
@@ -187,8 +214,8 @@
           <p id="displacement1"></p>
         </div>
       
-        <button  id="readFileDD">Read File</button>
-        <button  id="readSelectedFileD">Read Selected File</button>
+       
+       
         <script type="module" src="js/renderernode.js" ></script>
         <script type="module" src="js/rendererD.js" ></script>  
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -211,8 +238,8 @@
           <p id="strain-energy2"></p>
           <p id="displacement2"></p>
         </div>
-        <button  id="readFileO">Read File</button>
-        <button  id="readSelectedFileO">Read Selected File</button>
+        <button  id="readFileO">Built mesh</button>
+        <button  id="readSelectedFileO">Read mesh</button>
         <script type="module" src="js/rendererO.js" ></script>  
         <script type="module" src="js/renderernode.js" ></script>   
         <script type="module" src="js/rendererFileO.js" ></script>        

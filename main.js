@@ -57,7 +57,7 @@ function createMainWindow() {
 
                         if (files && files.length > 0) {
                             selectedFilePath = files[0]; // Seçilen dosya yolunu sakla
-                            console.log('Secilen Dosya:', selectedFilePath);
+                            console.log('Selected file:', selectedFilePath);
                            
                         }
                     },
@@ -88,12 +88,6 @@ function createMainWindow() {
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
 
-
-
-
-
-
-
     // Renderer'dan dosya isteği geldiğinde dosya yolunu gönder
     ipcMain.on('request-file-path', (event) => {
         if (selectedFilePath) {
@@ -103,12 +97,6 @@ function createMainWindow() {
             event.sender.send('response-file-path', 'Dosya secilmedi!');
         }
     });
-
-
-
-
-
-
 
     //  to get values and send to API
     const appPort = 3000; //  the port number 
@@ -221,10 +209,10 @@ function createMainWindow() {
         console.log("sending dx, length, width...", length, width);
     });
     ipcMain.on('send-dxO', (event, data) => {
-        const { dx, length, width } = data;
-        const responseData = { dx, length, width };
+        const { dx } = data;
+        const responseData = { dx };
         event.sender.send('get-dxO', responseData);
-        console.log("sending dx, length, width...", length, width);
+        console.log("sending dx, length, width...");
     });
     ipcMain.on('send-dxFileD', (event, data) => {
         const { rmin, volfrac, dx } = data;
@@ -360,8 +348,16 @@ function createMainWindow() {
         console.log("Received from renderer process:");
         console.log("readFlag:", readFlag);
         console.log("readFilePath:", readFilePath);
+        console.log("rmin sended: ", rmin);
 
-        const responseData = data;    
+      //  const responseData = data;    
+        
+        const responseData = { 
+            rmin: rmin, 
+            volfrac: volfrac, 
+            readFlag: readFlag, 
+            readFilePath: readFilePath 
+        };
         app.post('/api/readFile', (req, res) => {
             res.json(responseData); // Send the updated data in the response
         });

@@ -10,7 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     var forceDict = {};
     var bcDict = {};
     var bcListsend = [];
+    var passListsend = [];
 
+    
     const f = {};
 
     boundaryButton.addEventListener('click', async (event) => {
@@ -28,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // New array to hold IDs selected in handleSendButtonClickForce
     var selectedForceIDs = [];
     var selectedBCIDs = [];
+    var selectedPassIDs = [];
        
     // Modify updateList to only show items not in selectedIDs
     function updateList(listContainerId, list, selectedIDs) {
@@ -95,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("forceDict: ", forceDict);
     }
 
-    // Common function to handle adding points (Force/BC)
+    // Common function to handle adding points (Force/BC/Passive)
     function addPoint(designVarId, list, listContainerId) {
         const designvar = document.getElementById(designVarId).innerHTML;
         const dArray = designvar.split(" ");
@@ -110,18 +113,21 @@ document.addEventListener('DOMContentLoaded', () => {
             ipcRenderer.send('selected-sphere', selectedMeshID);     
         }
     }   
-
     // **to get points id for force**
     const addButtonF = document.getElementById('forcepointadd');
     addButtonF.addEventListener('click', () => {
         addPoint('design-var1', fListsend, 'list-container1');
     }); 
-
     // **to get points id for BC**
     const addButtonBC = document.getElementById('bcpointadd');
     addButtonBC.addEventListener('click', () => {
         addPoint('design-var1', bcListsend, 'list-container2');
     });
+     // **to get points id for Passive**
+     const addButtonPassive = document.getElementById('passivepointadd');
+     addButtonPassive.addEventListener('click', () => {
+         addPoint('design-var1', passListsend, 'list-container3');
+     });
 
      // Common function to handle sending selected IDs (area)
     function handleSendButtonClick(buttonId, listContainerId, selectedIDs) {
@@ -130,41 +136,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const nonEmptyDesignVarListTemp = designVarListTemp.map(item => item.trim()).filter(item => item !== ''); // Filter out empty elements
         const uniqueDesignVarSetTemp = new Set(nonEmptyDesignVarListTemp);
         const uniqueDesignVarListTemp = Array.from(uniqueDesignVarSetTemp);
-
         uniqueDesignVarListTemp.forEach(id => {          
             // Add to selectedIDs
             if (!selectedIDs.includes(id)) {
                 selectedIDs.push(id);
             }
         });
-
         // Send the updated list to ipcRenderer
         ipcRenderer.send('selected-sphere', selectedIDs); 
-
         // Update the list container with the total count of selected IDs
         const listContainer = document.getElementById(listContainerId);
-        listContainer.innerHTML = ""; // Clear existing content if needed
-        
-    }
-    
+        listContainer.innerHTML = ""; // Clear existing content if needed        
+    }    
     // **to clear  area ids for force**
     const clearButtonF = document.getElementById('clearselectedforce');
     clearButtonF.addEventListener('click', () => {
         clearSelectedIDs(fListsend, selectedForceIDs, 'list-container1');    
-    });
-    
+    });    
     // **to clear area id for BC**
     const clearButtonBC = document.getElementById('clearselectedbc');
     clearButtonBC.addEventListener('click', () => {
         clearSelectedIDs(bcListsend, selectedBCIDs, 'list-container2');    
     });
-
+     // **to clear area id for Passive**
+     const clearButtonPassive = document.getElementById('clearselectedpassive');
+     clearButtonPassive.addEventListener('click', () => {
+         clearSelectedIDs(passListsend, selectedPassIDs, 'list-container3');    
+     });
     // **to get bc components values**
     function bcComponents() {
         let xCom = false;
         let yCom = false;
         let zCom = false;
-
         // for x, y, and z components
         const xCheckbox = document.getElementById('x-checkbox');
         const yCheckbox = document.getElementById('y-checkbox');
@@ -198,6 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
         handleSendButtonClick('bclist', 'list-container2', selectedBCIDs);
         bcComponents();
         updateList('list-container2', bcListsend); // Update the list before calling handleSendButtonClick()
+        await new Promise(resolve => setTimeout(resolve, 100)); // wait for the list to be updated   
+        handleSendButtonClick('passivelist', 'list-container3',  selectedPassIDs);
+        updateList('list-container3', passListsend);
         // Combine points for force area
         const combinedPoints = [...fListsend, ...selectedForceIDs].filter(point => point !== null);
         f['points'] = combinedPoints;
@@ -206,17 +212,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // Combine designVars for BC area
         const combinedDesignVars = [...bcListsend, ...selectedBCIDs].filter(varItem => varItem !== null);
         f['designVars'] = combinedDesignVars;
+        const combinedPassive = [...passListsend, ...selectedPassIDs].filter(varItem => varItem !== null);
+        f['passive'] = combinedPassive;
         console.log(f);
         ipcRenderer.send('send-BCparams', f);
-
         // **send total elements of force list message to screen**
         const countMessageF = document.createElement("p");
         countMessageF.textContent = `There are ${combinedPoints.length} selected particles.`;
         document.getElementById('list-container1').appendChild(countMessageF);
-
-        // **send total elements of force list message to screen**
+        // **send total elements of BC list message to screen**
         const countMessageBC = document.createElement("p");
         countMessageBC.textContent = `There are ${combinedDesignVars.length} selected particles.`;
         document.getElementById('list-container2').appendChild(countMessageBC);
+        // **send total elements of passive list message to screen**
+        const countMessagePass = document.createElement("p");
+        countMessagePass.textContent = `There are ${combinedPassive.length} selected particles.`;
+        document.getElementById('list-container3').appendChild(countMessagePass);
     });
 });

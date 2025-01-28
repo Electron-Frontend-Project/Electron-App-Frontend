@@ -9,7 +9,7 @@ import { Lut } from './Lut.js';
 let flag = false, isInitStopped = false, clicked = 0, camera, scene, renderer, camera2, scene2, renderer2, axesHelper, fixedObjectGroup, ambientLight,
 directionalLight, radius, widthSegments, heightSegments, controls, controls2, CAM_DISTANCE, currentAxis, lines, sphere, spheres,
 container, container2, lut, orthoCamera, sprite, uiScene, textSprite, complience = 0, step = 0, selectedColorMap = '', 
-selectedData = '',  dx, len, wid
+selectedData = '',  dx
 ; 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // to get dx 
 ipcRenderer.on('get-dxO', (event, data) => {    
-    ({ dx, length: len, width: wid } = data);
+    ({ dx } = data);
 });
 ipcRenderer.on('file-read-error2', (event, errorMessage) => {
     // Handle the file read error here in the renderer process
@@ -120,7 +120,7 @@ function init() {
     orthoCamera = new THREE.OrthographicCamera( - 1, width / height , 1, - 1, 1, 2 );
 	orthoCamera.position.set( 0.75, 0, 1 );
     CAM_DISTANCE = 10;
-    const area = Math.sqrt(Math.pow(len, 2) + Math.pow(wid, 2));
+    const area = (dx*30)*(dx*30);
     camera.position.z = 30 + dx/area;  // for camera setting according to DX, LEN and WID 
     renderer = new THREE.WebGLRenderer({ alpha: true }); 
     renderer2 = new THREE.WebGLRenderer({ alpha: true }); 
@@ -135,8 +135,63 @@ function init() {
     // Create OrbitControls
     controls = new OrbitControls(camera, renderer.domElement);
     controls2 = new OrbitControls(camera2, renderer2.domElement);
-    axesHelper = new THREE.AxesHelper( 5 );
-    scene2.add( axesHelper );
+
+
+
+        // Axes' thickness and length
+        const thickness = 0.2; 
+        const lngth = 5;     
+    
+        // X  (red)
+        const xGeometry = new THREE.CylinderGeometry(thickness, thickness, lngth, 32);
+        const xMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const xAxis = new THREE.Mesh(xGeometry, xMaterial);
+        xAxis.rotation.z = Math.PI / 2; 
+        xAxis.position.x = lngth / 2;  
+        scene2.add(xAxis);
+    
+        // Y  (green)
+        const yGeometry = new THREE.CylinderGeometry(thickness, thickness, lngth, 32);
+        const yMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const yAxis = new THREE.Mesh(yGeometry, yMaterial);
+        yAxis.position.y = lngth / 2;  
+        scene2.add(yAxis);
+    
+        // Z  (blue)
+        const zGeometry = new THREE.CylinderGeometry(thickness, thickness, lngth, 32);
+        const zMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        const zAxis = new THREE.Mesh(zGeometry, zMaterial);
+        zAxis.rotation.x = Math.PI / 2; 
+        zAxis.position.z = lngth / 2;  
+        scene2.add(zAxis);
+    
+        // create texts using Sprite
+        const createLabel = (text, color, position) => {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            context.font = ' 200px Arial';
+            context.fillStyle = `rgba(${color.r * 255}, ${color.g * 255}, ${color.b * 255}, 1)`;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+    
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.minFilter = THREE.LinearFilter;
+    
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(2, 1, 1); 
+            sprite.position.copy(position); 
+            scene2.add(sprite);
+        };
+    
+        // Add texts
+        createLabel('X', new THREE.Color(1, 0, 0), new THREE.Vector3(lngth + 1, 0, 0)); // X text
+        createLabel('Y', new THREE.Color(0, 1, 0), new THREE.Vector3(0, lngth + 1, 0)); // Y text
+        createLabel('Z', new THREE.Color(0, 0, 1), new THREE.Vector3(0, 0, lngth + 1)); // Z text
+    
+   // axesHelper = new THREE.AxesHelper( 5 );
+   // scene2.add( axesHelper );
     currentAxis = 'none';
     radius = dx / 2; // Radius of spheres
     widthSegments = 32; // Surface parts of the sphere

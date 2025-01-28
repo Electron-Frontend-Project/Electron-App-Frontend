@@ -134,8 +134,9 @@ function initScene(lines) {
     scene = new THREE.Scene();  
     scene2 = new THREE.Scene();
     THREE.Object3D.DefaultUp.set(0.0, 0.0, 1.0); // z axis 
-    scene.background = new THREE.Color( "#ffffff" );    
-    scene2.background = new THREE.Color( "#ffffff" );    
+    scene.background = new THREE.Color( "#ffffff" );  
+   
+  //  scene2.background = new THREE.Color( "#ffffff" );    
     // Get the container element by its class name
     container = document.querySelector('.design-part');   
     container2 = document.querySelector('.corner-boxD');
@@ -167,7 +168,8 @@ function initScene(lines) {
     camera2.zoom = 10 + dx/area;
     camera2.updateProjectionMatrix();
     renderer = new THREE.WebGLRenderer(); 
-    renderer2 = new THREE.WebGLRenderer(); 
+    renderer2 = new THREE.WebGLRenderer({ alpha: true }); 
+    renderer2.setClearColor(0x000000, 0); // Set clear color to transparent
     // Set the renderer's size to match the container
     renderer.setSize(width, height);   
     renderer2.setSize(width2, height2); 
@@ -178,8 +180,59 @@ function initScene(lines) {
     controls = new OrbitControls(camera, renderer.domElement);
     controls2 = new OrbitControls(camera2, renderer2.domElement);
 
-    axesHelper = new THREE.AxesHelper( 5 );
-    scene2.add( axesHelper );
+    // **Axeshelper**
+    // Axes' thickness and length
+    const thickness = 0.2; 
+    const lngth = 5;     
+
+    // X  (red)
+    const xGeometry = new THREE.CylinderGeometry(thickness, thickness, lngth, 32);
+    const xMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const xAxis = new THREE.Mesh(xGeometry, xMaterial);
+    xAxis.rotation.z = Math.PI / 2; 
+    xAxis.position.x = lngth / 2;  // for orijin
+    scene2.add(xAxis);
+
+    // Y  (green)
+    const yGeometry = new THREE.CylinderGeometry(thickness, thickness, lngth, 32);
+    const yMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const yAxis = new THREE.Mesh(yGeometry, yMaterial);
+    yAxis.position.y = lngth / 2;  
+    scene2.add(yAxis);
+
+    // Z  (blue)
+    const zGeometry = new THREE.CylinderGeometry(thickness, thickness, lngth, 32);
+    const zMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const zAxis = new THREE.Mesh(zGeometry, zMaterial);
+    zAxis.rotation.x = Math.PI / 2; 
+    zAxis.position.z = lngth / 2;  
+    scene2.add(zAxis);
+
+    // create texts using Sprite
+    const createLabel = (text, color, position) => {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        context.font = ' 200px Arial';
+        context.fillStyle = `rgba(${color.r * 255}, ${color.g * 255}, ${color.b * 255}, 1)`;
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.minFilter = THREE.LinearFilter;
+
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.scale.set(2, 1, 1); 
+        sprite.position.copy(position); 
+        scene2.add(sprite);
+    };
+
+    // Add texts
+    createLabel('X', new THREE.Color(1, 0, 0), new THREE.Vector3(lngth + 1, 0, 0)); // X text
+    createLabel('Y', new THREE.Color(0, 1, 0), new THREE.Vector3(0, lngth + 1, 0)); // Y text
+    createLabel('Z', new THREE.Color(0, 0, 1), new THREE.Vector3(0, 0, lngth + 1)); // Z text
+
     // group of spheres to clickable
     spheres = [];
     facesPlanes = [];
@@ -235,7 +288,7 @@ function initScene(lines) {
         }        
     });
     
-    // Pick/Add area for Force and BC
+    // Add area for Force and BC
     class SelectionManager {
         constructor(camera, scene, renderer, buttonId, clearButtonId, listId, defaultColor, selectedColor) {
             this.camera = camera;
@@ -348,10 +401,12 @@ function initScene(lines) {
     // ** Create Managers for BC and Force **
     const bcManager = new SelectionManager(camera, scene, renderer, 'bcareaadd', 'clearselectedbc', 'bclist', 0x00ff00, 'red');
     const forceManager = new SelectionManager(camera, scene, renderer, 'forceareaadd', 'clearselectedforce', 'forcelist', 0x00ff00, 'blue');
+    const passiveManager = new SelectionManager(camera, scene, renderer, 'passiveareaadd', 'clearselectedpassive', 'passivelist', 0x00ff00, 'purple');
     
     // Submit Buttons
     document.getElementById('bcSubmit').addEventListener('click', () => bcManager.sendSelectedMeshesToHTML());
     document.getElementById('bcSubmit').addEventListener('click', () => forceManager.sendSelectedMeshesToHTML());
+    document.getElementById('bcSubmit').addEventListener('click', () => passiveManager.sendSelectedMeshesToHTML());
     
    
     geometry.dispose();

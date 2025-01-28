@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Send all parameters to the main process using IPC
         ipcRenderer.send('fetch-data', { rmin, dx, volfrac, length, width, thick, ndivx, ndivy, ndivz});
         ipcRenderer.send('send-dxD', {dx, length, width});  // send datas to rendererD
-        ipcRenderer.send('send-dxO', {dx, length, width});  // send datas to rendererO
+        ipcRenderer.send('send-dxO', {dx});  // send datas to rendererO
         ipcRenderer.send('send-dxFileD', {dx});  // send data to rendererFileD
         ipcRenderer.send('send-dxFileO', {dx});  // send data to rendererFileO
 
