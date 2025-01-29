@@ -288,7 +288,7 @@ function initScene(lines) {
         }        
     });
     
-    // Add area for Force and BC
+    // Pick/Add area for Force and BC
     class SelectionManager {
         constructor(camera, scene, renderer, buttonId, clearButtonId, listId, defaultColor, selectedColor) {
             this.camera = camera;

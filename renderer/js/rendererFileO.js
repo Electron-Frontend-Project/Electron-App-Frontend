@@ -112,7 +112,7 @@ function init() {
     scene2 = new THREE.Scene();
     uiScene = new THREE.Scene();
     scene.background = new THREE.Color( "#ffffff" );    
-    scene2.background = new THREE.Color( "#ffffff" );  
+ //   scene2.background = new THREE.Color( "#ffffff" );  
     THREE.Object3D.DefaultUp.set(0.0, 0.0, 1.0); // z axis    
     // Create a camera with appropriate aspect ratio and size
     container = document.querySelector('.topology-part');   

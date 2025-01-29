@@ -223,7 +223,7 @@ function initScene(lines) {
     scene2 = new THREE.Scene();
     THREE.Object3D.DefaultUp.set(0.0, 0.0, 1.0); // z axis 
     scene.background = new THREE.Color( "#ffffff" );    
-    scene2.background = new THREE.Color( "#ffffff" );    
+  //  scene2.background = new THREE.Color( "#ffffff" );    
     // Get the container element by its class name
     container = document.querySelector('.design-part');   
     container2 = document.querySelector('.corner-boxD');
