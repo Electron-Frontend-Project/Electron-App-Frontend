@@ -11,8 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     var bcDict = {};
     var bcListsend = [];
     var passListsend = [];
-
-    
     const f = {};
 
     boundaryButton.addEventListener('click', async (event) => {
@@ -31,54 +29,41 @@ document.addEventListener('DOMContentLoaded', () => {
     var selectedForceIDs = [];
     var selectedBCIDs = [];
     var selectedPassIDs = [];
-       
+
     // Modify updateList to only show items not in selectedIDs
-    function updateList(listContainerId, list, selectedIDs) {
+    function updateList(listContainerId, list) {
         const listContainer = document.getElementById(listContainerId);
-        // Clear existing list
-        listContainer.innerHTML = "";
+        listContainer.innerHTML = ""; 
     
-        // Create a list of elems and remove buttons
-        for (const elem of list) {
-            // Skip items in selectedIDs
-            if (selectedIDs && selectedIDs.includes(elem)) { // Check if selectedIDs is defined
-                continue; // Skip this iteration if the item is in selectedIDs
-            }
-    
+        list.forEach(elem => {
             const listItem = document.createElement("li");
             listItem.textContent = elem;
-    
-            // Create remove button
             const removeButton = document.createElement("button");
             removeButton.textContent = "Remove";
             removeButton.addEventListener("click", (event) => {
                 event.preventDefault();
-                // Remove the element from the list
-                const removedID = elem;
-                list.splice(list.indexOf(removedID), 1); // Remove from list
-                updateList(listContainerId, list, selectedIDs); // Update the displayed list
-                ipcRenderer.send('removed-sphere', removedID); // Send removeID to main
+                list.splice(list.indexOf(elem), 1); // remove id from the list
+                updateList(listContainerId, list); // update the list
+                ipcRenderer.send('removed-sphere', elem); // send removed id
             });
             listItem.appendChild(removeButton);
-    
             listContainer.appendChild(listItem);
-        }
+        });
     }
 
-   // Common function to clear selected IDs
+    // Common function to clear selected IDs
     function clearSelectedIDs(list, selectedIDs, listContainerId) {
         selectedIDs.forEach(id => {
             const index = list.indexOf(id);
             if (index !== -1) {
-                list.splice(index, 1); // Remove ID from the list
+                list.splice(index, 1); // remove id from the list
             }
         });
-        selectedIDs.length = 0; // Clear the selected IDs array
-
-        // Update the list
+        selectedIDs.length = 0; // clear selected ids
+    
         updateList(listContainerId, list);
-
-        // Send removed IDs to ipcRenderer
+    
+        // send all ids
         ipcRenderer.send('removed-spheres', selectedIDs);
     }
 
@@ -105,64 +90,78 @@ document.addEventListener('DOMContentLoaded', () => {
         const dValue = dArray[2];
         if (dValue != null && !list.includes(dValue)) {
             list.push(dValue);
-            updateList(listContainerId, list); // Update the displayed list 
+            updateList(listContainerId, list); // Update the displayed list
 
             // Send the ID of the selected sphere to rendererD.js
             const selectedMeshID = document.getElementById(designVarId).textContent.split(": ")[1];
             console.log("Selected Mesh ID:", selectedMeshID); // Debug log
-            ipcRenderer.send('selected-sphere', selectedMeshID);     
+            ipcRenderer.send('selected-sphere', selectedMeshID);
         }
-    }   
-    // **to get points id for force**
+    }
+
+    // **to get points id for Force**
     const addButtonF = document.getElementById('forcepointadd');
     addButtonF.addEventListener('click', () => {
         addPoint('design-var1', fListsend, 'list-container1');
-    }); 
+    });
+
     // **to get points id for BC**
     const addButtonBC = document.getElementById('bcpointadd');
     addButtonBC.addEventListener('click', () => {
         addPoint('design-var1', bcListsend, 'list-container2');
     });
-     // **to get points id for Passive**
-     const addButtonPassive = document.getElementById('passivepointadd');
-     addButtonPassive.addEventListener('click', () => {
-         addPoint('design-var1', passListsend, 'list-container3');
-     });
 
-     // Common function to handle sending selected IDs (area)
+    // **to get points id for Passive**
+    const addButtonPassive = document.getElementById('passivepointadd');
+    addButtonPassive.addEventListener('click', () => {
+        addPoint('design-var1', passListsend, 'list-container3');
+    });
+
+    // Common function to handle sending selected IDs (area)
     function handleSendButtonClick(buttonId, listContainerId, selectedIDs) {
-        const listElementHTML = document.getElementById(buttonId).innerHTML;
+        const listElementHTML = document.getElementById(buttonId).innerHTML;   
         const designVarListTemp = listElementHTML.split('<br>');
-        const nonEmptyDesignVarListTemp = designVarListTemp.map(item => item.trim()).filter(item => item !== ''); // Filter out empty elements
+        const nonEmptyDesignVarListTemp = designVarListTemp.map(item => item.trim()).filter(item => item !== '');
+    
         const uniqueDesignVarSetTemp = new Set(nonEmptyDesignVarListTemp);
         const uniqueDesignVarListTemp = Array.from(uniqueDesignVarSetTemp);
-        uniqueDesignVarListTemp.forEach(id => {          
-            // Add to selectedIDs
+    
+        console.log(`Seçilen ID'ler:`, uniqueDesignVarListTemp);
+    
+        // updated selectedIDs list
+        selectedIDs.length = 0;  
+        uniqueDesignVarListTemp.forEach(id => {
             if (!selectedIDs.includes(id)) {
                 selectedIDs.push(id);
             }
         });
-        // Send the updated list to ipcRenderer
-        ipcRenderer.send('selected-sphere', selectedIDs); 
-        // Update the list container with the total count of selected IDs
-        const listContainer = document.getElementById(listContainerId);
-        listContainer.innerHTML = ""; // Clear existing content if needed        
-    }    
-    // **to clear  area ids for force**
-    const clearButtonF = document.getElementById('clearselectedforce');
-    clearButtonF.addEventListener('click', () => {
-        clearSelectedIDs(fListsend, selectedForceIDs, 'list-container1');    
-    });    
-    // **to clear area id for BC**
-    const clearButtonBC = document.getElementById('clearselectedbc');
-    clearButtonBC.addEventListener('click', () => {
-        clearSelectedIDs(bcListsend, selectedBCIDs, 'list-container2');    
+    
+        console.log(`Güncellenmiş selectedIDs:`, selectedIDs);
+        updateList(listContainerId, selectedIDs);  
+    
+        // total elements 
+        document.getElementById(listContainerId).innerHTML = `<p>There are ${selectedIDs.length} selected particles.</p>`;
+    }
+    
+    // **to clear all ids for force**
+    const clearButtonAllF = document.getElementById('clearforce');
+    clearButtonAllF.addEventListener('click', () => {
+        clearSelectedIDs(fListsend, selectedForceIDs, 'list-container1');
     });
-     // **to clear area id for Passive**
-     const clearButtonPassive = document.getElementById('clearselectedpassive');
-     clearButtonPassive.addEventListener('click', () => {
-         clearSelectedIDs(passListsend, selectedPassIDs, 'list-container3');    
-     });
+
+    // **to clear all ids for BC**
+    const clearButtonAllBC = document.getElementById('clearbc');
+    clearButtonAllBC.addEventListener('click', () => {
+        clearSelectedIDs(bcListsend, selectedBCIDs, 'list-container2');
+    });
+
+    // **to clear all ids for Passive**
+    const clearButtonAllPassive = document.getElementById('clearpassive');
+    clearButtonAllPassive.addEventListener('click', () => {
+        clearSelectedIDs(passListsend, selectedPassIDs, 'list-container3');
+    });
+  
+
     // **to get bc components values**
     function bcComponents() {
         let xCom = false;
@@ -194,39 +193,45 @@ document.addEventListener('DOMContentLoaded', () => {
     Submit.addEventListener('click', async (event) => {
         event.preventDefault();
         await new Promise(resolve => setTimeout(resolve, 100));
-        handleSendButtonClick('forcelist', 'list-container1',  selectedForceIDs);
+        handleSendButtonClick('forcelist', 'list-container1', selectedForceIDs);
         forceComponents();
         updateList('list-container1', fListsend); // Update the list before calling handleSendButtonClick()
-        await new Promise(resolve => setTimeout(resolve, 100)); // wait for the list to be updated        
+        await new Promise(resolve => setTimeout(resolve, 100)); // wait for the list to be updated
         handleSendButtonClick('bclist', 'list-container2', selectedBCIDs);
         bcComponents();
         updateList('list-container2', bcListsend); // Update the list before calling handleSendButtonClick()
-        await new Promise(resolve => setTimeout(resolve, 100)); // wait for the list to be updated   
-        handleSendButtonClick('passivelist', 'list-container3',  selectedPassIDs);
+        await new Promise(resolve => setTimeout(resolve, 100)); // wait for the list to be updated
+        handleSendButtonClick('passivelist', 'list-container3', selectedPassIDs);
         updateList('list-container3', passListsend);
-        // Combine points for force area
+    
+        // Combine points for Force area
         const combinedPoints = [...fListsend, ...selectedForceIDs].filter(point => point !== null);
         f['points'] = combinedPoints;
         f['forcecomponents'] = forceDict;
-        f['constcomponents'] = bcDict;
+        f['constcomponents'] = bcDict;    
         // Combine designVars for BC area
         const combinedDesignVars = [...bcListsend, ...selectedBCIDs].filter(varItem => varItem !== null);
         f['designVars'] = combinedDesignVars;
+        // Combine designVars for Passive area
         const combinedPassive = [...passListsend, ...selectedPassIDs].filter(varItem => varItem !== null);
         f['passive'] = combinedPassive;
+    
         console.log(f);
         ipcRenderer.send('send-BCparams', f);
+    
         // **send total elements of force list message to screen**
         const countMessageF = document.createElement("p");
         countMessageF.textContent = `There are ${combinedPoints.length} selected particles.`;
         document.getElementById('list-container1').appendChild(countMessageF);
+    
         // **send total elements of BC list message to screen**
         const countMessageBC = document.createElement("p");
         countMessageBC.textContent = `There are ${combinedDesignVars.length} selected particles.`;
         document.getElementById('list-container2').appendChild(countMessageBC);
+    
         // **send total elements of passive list message to screen**
         const countMessagePass = document.createElement("p");
         countMessagePass.textContent = `There are ${combinedPassive.length} selected particles.`;
         document.getElementById('list-container3').appendChild(countMessagePass);
-    });
+    });    
 });

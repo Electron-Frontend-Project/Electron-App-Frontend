@@ -48,7 +48,6 @@ ipcRenderer.on('get-dxD', (event, data) => {
 
 // to get selected sphere IDs (orange)
 ipcRenderer.on('selected-spheres', (event, selectedMeshID) => {
-    console.log('Received selectedMeshID in main process:', selectedMeshID); // Debugging log
     selectedSphereIDs.push(selectedMeshID);
 });
 
@@ -134,13 +133,10 @@ function initScene(lines) {
     scene = new THREE.Scene();  
     scene2 = new THREE.Scene();
     THREE.Object3D.DefaultUp.set(0.0, 0.0, 1.0); // z axis 
-    scene.background = new THREE.Color( "#ffffff" );  
-   
-  //  scene2.background = new THREE.Color( "#ffffff" );    
+    scene.background = new THREE.Color( "#ffffff" );   
     // Get the container element by its class name
     container = document.querySelector('.design-part');   
-    container2 = document.querySelector('.corner-boxD');
-    
+    container2 = document.querySelector('.corner-boxD');    
     // Create a camera with appropriate aspect ratio and size
     width = container.clientWidth;
     height = container.clientHeight;
@@ -217,10 +213,8 @@ function initScene(lines) {
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillText(text, canvas.width / 2, canvas.height / 2);
-
         const texture = new THREE.CanvasTexture(canvas);
         texture.minFilter = THREE.LinearFilter;
-
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
         const sprite = new THREE.Sprite(spriteMaterial);
         sprite.scale.set(2, 1, 1); 
@@ -288,9 +282,9 @@ function initScene(lines) {
         }        
     });
     
-    // Pick/Add area for Force and BC
+    // Pick/Add area for Force, BC and Passive
     class SelectionManager {
-        constructor(camera, scene, renderer, buttonId, clearButtonId, listId, defaultColor, selectedColor) {
+        constructor(camera, scene, renderer, buttonId, clearAreaButtonId, clearAllButtonId, listId, clearListId, defaultColor, selectedColor) {
             this.camera = camera;
             this.scene = scene;
             this.renderer = renderer;
@@ -299,11 +293,14 @@ function initScene(lines) {
             this.designPart = document.querySelector('.design-part');
             this.selectedMeshes = [];
             this.isOrbitControlEnabled = true;
+            this.isClearAreaMode = false;
             this.defaultColor = defaultColor;
-            this.selectedColor = selectedColor;    
+            this.selectedColor = selectedColor;   
+            this.clearListId = clearListId;    
             this.initButton(buttonId);
-            this.initClearButton(clearButtonId);
-            this.listId = listId;    
+            this.initClearAreaButton(clearAreaButtonId);
+            this.initClearAllButton(clearAllButtonId);    
+            this.listId = listId;
             this.addEventListeners();
         }
     
@@ -314,9 +311,17 @@ function initScene(lines) {
             });
         }
     
-        initClearButton(clearButtonId) {
-            document.getElementById(clearButtonId).addEventListener('click', () => {
-                this.clearSelectedMeshes();
+        initClearAreaButton(clearAreaButtonId) {
+            const button = document.getElementById(clearAreaButtonId);
+            button.addEventListener('click', () => {
+                console.log(`Clear Area button clicked for ${this.clearListId}`);
+                this.toggleClearAreaMode(button);
+            });
+        }
+    
+        initClearAllButton(clearAllButtonId) {
+            document.getElementById(clearAllButtonId).addEventListener('click', () => {
+                this.clearAllSelectedMeshes();
             });
         }
     
@@ -330,14 +335,74 @@ function initScene(lines) {
             controls.enabled = this.isOrbitControlEnabled;
         }
     
+        toggleClearAreaMode(button) {
+            if (button.style.backgroundColor === 'rgb(0, 255, 0)') {
+                button.style.backgroundColor = '';
+                this.isClearAreaMode = false;
+                this.isOrbitControlEnabled = true; // active Orbit control 
+            } else {
+                button.style.backgroundColor = 'rgb(0, 255, 0)';
+                this.isClearAreaMode = true;
+                this.isOrbitControlEnabled = false; // inactive Orbit control
+            }
+            controls.enabled = this.isOrbitControlEnabled;
+        }
+    
         clearSelectedMeshes() {
+            const allSelected = this.selectionBox.select();
+            const removedIDs = this.getRemovedIDsInClearArea(allSelected);
+    
+            // clear selected meshes in selected area 
+            allSelected.forEach((sphere) => {
+                if (sphere.material) {
+                    sphere.material.color.set(this.defaultColor);
+                }
+            });
+    
+            // remove ids from HTML 
+            this.removeIDsFromHTML(removedIDs);   
+            // remove ids from the list
+            this.selectedMeshes = this.selectedMeshes.filter(mesh => !removedIDs.includes(mesh.designvar));    
+            console.log("Cleared selected meshes in area:", removedIDs);
+        }
+    
+        getRemovedIDsInClearArea(selectedMeshes) {
+            const removedIDs = [];    
+            selectedMeshes.forEach((sphere) => {
+                if (sphere && sphere.material && sphere.designvar) {
+                    if (!removedIDs.includes(sphere.designvar)) {
+                        removedIDs.push(sphere.designvar); 
+                    }
+                }
+            });
+    
+            return removedIDs;
+        }
+    
+        sendRemovedIDsToHTML(removedIDs) {
+            if (removedIDs.length > 0 && this.clearListId) {
+                const clearListElement = document.getElementById(this.clearListId);
+                if (clearListElement) {
+                    const currentHTML = clearListElement.innerHTML;
+                    const newItemsHTML = removedIDs.map(id => `<br>${id}`).join('');
+                    clearListElement.innerHTML = currentHTML + newItemsHTML; 
+    
+                    console.log(`Updated ${this.clearListId} with IDs:`, removedIDs);
+                } else {
+                    console.error(`Element with id ${this.clearListId} not found!`);
+                }
+            }
+        }
+    
+        clearAllSelectedMeshes() {
             this.selectedMeshes.forEach((sphere) => {
                 if (sphere.material) {
                     sphere.material.color.set(this.defaultColor);
                 }
             });
             this.selectedMeshes = [];
-            console.log("Selected meshes cleared:", this.selectedMeshes);
+            document.getElementById(this.listId).innerHTML = ""; // clear all selected ids 
+            console.log("All selected meshes cleared:", this.selectedMeshes);
         }
     
         addEventListeners() {
@@ -347,10 +412,7 @@ function initScene(lines) {
         }
     
         onPointerDown(event) {
-            if (!this.isOrbitControlEnabled) {
-                for (const item of this.selectionBox.collection) {
-                    item.material.color.set(this.selectedColor);
-                }
+            if (!this.isOrbitControlEnabled || this.isClearAreaMode) {
                 const rect = this.designPart.getBoundingClientRect();
                 this.selectionBox.startPoint.set(
                     (event.clientX - rect.left) / rect.width * 2 - 1,
@@ -368,11 +430,7 @@ function initScene(lines) {
                     -(event.clientY - rect.top) / rect.height * 2 + 1,
                     0.5
                 );
-                const allSelected = this.selectionBox.select();
-                allSelected.forEach((sphere) => {
-                    sphere.material.color.set(this.selectedColor);
-                    this.selectedMeshes.push(sphere);
-                });
+                this.processSelectedMeshes();
             }
         }
     
@@ -384,31 +442,76 @@ function initScene(lines) {
                     -(event.clientY - rect.top) / rect.height * 2 + 1,
                     0.5
                 );
-                const allSelected = this.selectionBox.select();
+                this.processSelectedMeshes();
+            }
+        }
+    
+        processSelectedMeshes() {
+            const allSelected = this.selectionBox.select();
+    
+            if (this.isClearAreaMode) {
+                this.clearSelectedMeshes();
+            } else {
                 allSelected.forEach((sphere) => {
                     sphere.material.color.set(this.selectedColor);
-                    this.selectedMeshes.push(sphere);
+                    if (!this.selectedMeshes.includes(sphere)) {
+                        this.selectedMeshes.push(sphere);
+                    }
                 });
             }
         }
     
+        removeIDsFromHTML(removedIDs) {
+            if (this.listId) {
+                const listElement = document.getElementById(this.listId);
+                if (listElement) {
+                    let currentHTML = listElement.innerHTML;
+                    removedIDs.forEach(id => {
+                        const regex = new RegExp(`<br>${id}`, 'g'); // regex to remove id from HTML
+                        currentHTML = currentHTML.replace(regex, '');
+                    });
+                    listElement.innerHTML = currentHTML;
+                    console.log(`Removed IDs from ${this.listId}:`, removedIDs);
+                } else {
+                    console.error(`Element with id ${this.listId} not found!`);
+                }
+            }
+        }
+    
         sendSelectedMeshesToHTML() {
-            const designVarList = this.selectedMeshes.map(mesh => mesh.designvar).join('<br>');
+            const designVarList = this.selectedMeshes
+                .filter(mesh => mesh.designvar) // get ids
+                .map(mesh => mesh.designvar)
+                .join('<br>');
+    
             document.getElementById(this.listId).innerHTML = designVarList;
         }
     }
     
-    // ** Create Managers for BC and Force **
-    const bcManager = new SelectionManager(camera, scene, renderer, 'bcareaadd', 'clearselectedbc', 'bclist', 0x00ff00, 'red');
-    const forceManager = new SelectionManager(camera, scene, renderer, 'forceareaadd', 'clearselectedforce', 'forcelist', 0x00ff00, 'blue');
-    const passiveManager = new SelectionManager(camera, scene, renderer, 'passiveareaadd', 'clearselectedpassive', 'passivelist', 0x00ff00, 'purple');
+    // ** Create Managers for BC, Force, and Passive **
+    const bcManager = new SelectionManager(
+        camera, scene, renderer,
+        'bcareaadd', 'clearselectedbc', 'clearbc',
+        'bclist', 'bcclearlist', 0x00ff00, 'red'
+    );
+    
+    const forceManager = new SelectionManager(
+        camera, scene, renderer,
+        'forceareaadd', 'clearselectedforce', 'clearforce',
+        'forcelist', 'forceclearlist', 0x00ff00, 'blue'
+    );
+    
+    const passiveManager = new SelectionManager(
+        camera, scene, renderer,
+        'passiveareaadd', 'clearselectedpassive', 'clearpassive',
+        'passivelist', 'passiveclearlist', 0x00ff00, 'purple'
+    );
     
     // Submit Buttons
     document.getElementById('bcSubmit').addEventListener('click', () => bcManager.sendSelectedMeshesToHTML());
     document.getElementById('bcSubmit').addEventListener('click', () => forceManager.sendSelectedMeshesToHTML());
     document.getElementById('bcSubmit').addEventListener('click', () => passiveManager.sendSelectedMeshesToHTML());
-    
-   
+
     geometry.dispose();
     camera.position.z = 30;
     
@@ -481,4 +584,3 @@ function initScene(lines) {
         renderer2.render(scene2, camera2);
     }       
 }
-

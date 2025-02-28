@@ -15,10 +15,7 @@
    
     <title>PDTO</title>
   </head>
-  <body>  
-    
-    
-    
+  <body>     
     <nav class="sidebar">
       <ul>
         <li>
@@ -26,8 +23,8 @@
             <p class="title">Read Mesh File</p>
             <ul>
               <li>
-                <button id="sendFileButton">Render Mesh</button>
-                <button  id="readSelectedFileD">Read mesh</button>
+                <button id="sendFileButton">Read Mesh</button>
+                <button  id="readSelectedFileD">Render mesh</button>
                 <script src="js/rendererFileD.js" type="module"></script>
                 <script src="js/rendererBuiltorRead.js" type="module"></script>
               </li>            
@@ -63,10 +60,6 @@
             </ul>
           </div>
 -->
-
-
-
-
           <div class="sidebar-item" id="opti-parameters">
             <p class="title">Optimization Parameters</p>
             <ul>
@@ -84,15 +77,12 @@
               </li>
               <li>
                 <button id="fetchButton" >Submit</button>
-
               </li>
             </ul>
-          </div>
-    
+          </div>   
           <div class="sidebar-item" id="manu-cons">
             <p class="title">Built Mesh Parameters</p>
-            <ul>
-             
+            <ul>             
               <li>
                 <label for="volfrac-label" style="font-size: 14px;">length</label>
                 <input type="number" name="volfrac-label" id="lengthInput" style="width: 30px;"></input></p>
@@ -111,7 +101,6 @@
               </li>
             </ul>
           </div>  
-
           <div class="sidebar-item" id="button-group">
             <script src="js/rendererplay.js" type="module"></script>
             <script src="js/rendererIGES.js" type="module"></script>
@@ -130,7 +119,6 @@
         </li>
       </ul>
     </nav>
-
     <!-- Dialog window for Boundary Condition parameters-->
     <dialog id="force-bc">
       <form>
@@ -142,8 +130,10 @@
           <div id="list-container1"></div>
           <button id="forcepointadd" type="button">Add point</button>
           <button id="forceareaadd" type="button">Add area</button>
-          <button id="clearselectedforce" type="button">Clear</button>
+           <button id="clearselectedforce" type="button">Clear area</button> 
+          <button id="clearforce" type="button">Clear all</button>
           <p id="forcelist" style="display: none;"></p>
+          <p id="forceclearlist" style="display: none;"></p>
           <p>2. Force Component: </p>
           <ul>
             <li>
@@ -159,8 +149,8 @@
               <input id="z-com" type="number">
             </li>
           </ul>
-        </fieldset>
-      
+        </fieldset> 
+
         <fieldset>
           <div class="modal-header2">
             <h1>BC</h1>
@@ -168,10 +158,12 @@
           <p>1. Select boundary conditions: </p>
           <div id="list-container2"></div>
           <button id="bcpointadd" type="button">Add point</button>
-          <button id="bcareaadd" type="button">Add area</button>         
-          <button id="clearselectedbc" type="button">Clear</button>
+          <button id="bcareaadd" type="button">Add area</button>        
+           <button id="clearselectedbc" type="button">Clear area</button>  
+          <button id="clearbc" type="button">Clear all</button>
           <div id="spherelist" class="spherelist">
             <p id="bclist" style="display: none;"></p>
+            <p id="bcclearlist" style="display: none;" ></p>
             <p>2. Constraint Component: </p>
             <ul>
               <li>
@@ -195,8 +187,10 @@
           <div id="list-container3"></div>
           <button id="passivepointadd" type="button">Add point</button>
           <button id="passiveareaadd" type="button">Add area</button>
-          <button id="clearselectedpassive" type="button">Clear</button>
+          <button id="clearselectedpassive" type="button">Clear area</button>   
+          <button id="clearpassive" type="button">Clear all</button>
           <p id="passivelist" style="display: none;"></p>
+          <p id="passiveclearlist" style="display: none;"></p>
         </fieldset>
 
         <button id="bcSubmit" type="button">Submit</button>
@@ -204,24 +198,18 @@
       </form>
     </dialog>
 
-
-    <div class="main-part" id="main-part">
-      
+    <div class="main-part" id="main-part">      
       <div class="design-part" id="scene-container1">        
         <div id="info-box1" class="info-box1">
           <p id="design-var1"></p>
           <p id="strain-energy1"></p>
           <p id="displacement1"></p>
-        </div>
-      
-       
-       
+        </div>    
         <script type="module" src="js/renderernode.js" ></script>
         <script type="module" src="js/rendererD.js" ></script>  
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <span class="design-text" style="margin-left: 10px; color: #7d7d7d;">Design Domain</span>
         <div class="corner-boxD"></div>
-
         <div id="contextMenuD" class="context-menuD" 
         style="display:none">
         <ul>
