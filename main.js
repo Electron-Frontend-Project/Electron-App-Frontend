@@ -12,7 +12,6 @@ const isMac = process.platform === 'darwin';
 const ps = require("child_process");
 
 let watcher; // Declare watcher variable
-
 let server; // Declare a variable to store the server instance
 let responseData = {}; // Initialize responseData with an empty object
 let bcresponseData = {};
@@ -21,8 +20,7 @@ let readFileResponse = {}; // send-readFile için ayrı veri yapısı
 let serverProcess = null;
 let mainWindow;
 let template;
-
-let selectedFilePath = null; // Global değişken
+let selectedFilePath = ""; // Global değişken
 
 function createMainWindow() {
     mainWindow = new BrowserWindow({      //creating main window
@@ -42,9 +40,9 @@ function createMainWindow() {
     if (isDev) {
         mainWindow.webContents.openDevTools();
     }
-    mainWindow.loadFile(path.join(__dirname, './renderer/index.html'));      //creating frontend and uploading it to backend file (main.js)
+    mainWindow.loadFile(path.join(__dirname, './renderer/index.html'));    //creating frontend and uploading it to backend file (main.js)
  
-    template = [
+    const template = [
         {
             label: 'File',
             submenu: [
@@ -56,42 +54,45 @@ function createMainWindow() {
                         });
 
                         if (files && files.length > 0) {
-                            selectedFilePath = files[0]; // Seçilen dosya yolunu sakla
+                            selectedFilePath = files[0]; // Store the selected file path
                             console.log('Selected file:', selectedFilePath);
-                           
-                        }
+                        
+                            // Send the file path and flag to all renderer processes
+                            mainWindow.webContents.send('file-selected', {
+                                filePath: selectedFilePath,
+                                readFlag: true,
+                            });
+                        }                    
                     },
                 },
-           
                 {
-                    label: 'Remove File'
-                }
+                    label: 'Remove File',
+                    click: () => {
+                        selectedFilePath = ''; // Clear the selected file path
+                        console.log("File selection reset.");
+                    
+                        // Send information to all renderer processes
+                        mainWindow.webContents.send('file-selected', {
+                            filePath: '',
+                            readFlag: false,
+                        });
+                    },
+                },
             ],
         },
-
-        {
-            label: 'Edit'
-        },
-
-        {
-            label: 'View'
-        },
-
-        {
-            label: 'Window'
-        },
-
-        {
-            label: 'Help'
-        }
-    ]
+        { label: 'Edit' },
+        { label: 'View' },
+        { label: 'Window' },
+        { label: 'Help' },
+    ];
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
 
-    // Renderer'dan dosya isteği geldiğinde dosya yolunu gönder
+   // When a file request is received from the renderer, send the file path
     ipcMain.on('request-file-path', (event) => {
+        console.log("Request edildi burada");
         if (selectedFilePath) {
-            console.log("request edildi: ", selectedFilePath);
+            console.log("Request edildi: ", selectedFilePath);
             event.sender.send('response-file-path', selectedFilePath);
         } else {
             event.sender.send('response-file-path', 'Dosya secilmedi!');
@@ -119,29 +120,26 @@ function createMainWindow() {
         }
     }); 
 
-
-
     // read Selected file 
     //  to read .msh file
-    ipcMain.on('read-selected-file1', (event, filePath) => {     
+    ipcMain.on('read-selected-file1', (event, filePath) => {
+        if (!filePath) {
+            event.sender.send('selected-file-not-found1', 'Dosya yolu null!');
+            return;
+        }
+    
         if (fs.existsSync(filePath)) {
-            // Read the contents of the MSH file
             fs.readFile(filePath, 'utf-8', (err, data) => {
                 if (err) {
                     event.sender.send('selected-file-read-error1', err.message);
                 } else {
-                    // Send the data to the renderer process
                     event.sender.send('selected-file-data1', data);
                 }
             });
-        } 
-        else {
+        } else {
             event.sender.send('selected-file-not-found1', `File not found: ${filePath}`);
         }
-    }); 
-
-
-
+    });
 
 
     ipcMain.on('read-file2', (event, dirPath) => {

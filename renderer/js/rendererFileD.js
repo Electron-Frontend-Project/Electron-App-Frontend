@@ -19,27 +19,15 @@ let selectedFilePath = null;
 var i=0;
 
 document.addEventListener('DOMContentLoaded', () => {
-    const sendFileButton = document.getElementById('sendFileButton');
-    // click button
-    sendFileButton.addEventListener('click', (event) => {
-        // ask file path from main
-        console.log("clicked1")
-        ipcRenderer.send('request-file-path');
+    ipcRenderer.on('file-selected', (event, data) => {
+        if (data.filePath) {
+            selectedFilePath = data.filePath;
+            console.log("Selected file: ", selectedFilePath);
+        } else {
+            console.log("File selection was cancelled or removed.");
+            selectedFilePath = '';
+        }
     });
-
-    ipcRenderer.on('response-file-path', (event, filePath) => {
-        console.log("Selected file: ", filePath);
-        selectedFilePath = filePath;
-    });
-
-    /*  dx formula !!!!
-
-    xx = coord[1][0] - coord[0][0],
-    yy = coord[1][1] - coord[0][1],
-    zz = coord[1][2] - coord[0][2];
-    
-    dx = Math.sqrt(xx*xx + yy*yy + zz*zz);
-    */
 
     const readSelectedFile = document.getElementById('readSelectedFileD');
     const designPart = document.getElementById('scene-container1');
@@ -48,11 +36,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDesignPartOpen = false;
     readSelectedFile.addEventListener('click', async () => {
         if (isDesignPartOpen) {
+            readSelectedFile.style.backgroundColor = ''; // Reset button color to default
             designPart.style.width = '50%';
             topologyPart.style.width = '50%';
             mainPart.style.flexDirection = 'row';
             isDesignPartOpen = false;
         } else {
+            readSelectedFile.style.backgroundColor = 'green'; // Change button color to green
             designPart.style.width = '100%';
             topologyPart.style.width = '0%';
             mainPart.style.flexDirection = 'column';
@@ -68,7 +58,6 @@ ipcRenderer.on('get-dxFileD', (event, data) => {
     ({ dx: dx } = data);
     console.log("dx2 from rendererFileD ", dx );
 });
-
 
 ipcRenderer.on('selected-file-read-error1', (event, errorMessage) => {
     // Handle the file read error here in the renderer process
