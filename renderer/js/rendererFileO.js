@@ -11,6 +11,8 @@ directionalLight, radius, widthSegments, heightSegments, controls, controls2, CA
 container, container2, lut, orthoCamera, sprite, uiScene, textSprite, complience = 0, step = 0, selectedColorMap = '', 
 selectedData = '', dx
 ; 
+let stepTextSprite; // The sprite to be used to display the step number
+let currentStepNumber = 0; // Global variable to store the step number
 
 document.addEventListener('DOMContentLoaded', () => {
     const readFile = document.getElementById('readSelectedFileO');
@@ -43,13 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });     
 
-// to get dx form user
+// to get dx from user
 ipcRenderer.on('get-dxFileO', (event, data) => {     
     ({ dx: dx } = data);
     console.log("dx from rendererFileO ", dx );
 });
-
-
 
 ipcRenderer.on('file-read-error2', (event, errorMessage) => {
     // Handle the file read error here in the renderer process
@@ -111,8 +111,7 @@ function init() {
     scene = new THREE.Scene();  
     scene2 = new THREE.Scene();
     uiScene = new THREE.Scene();
-    scene.background = new THREE.Color( "#ffffff" );    
- //   scene2.background = new THREE.Color( "#ffffff" );  
+    scene.background = new THREE.Color( "#ffffff" );     
     THREE.Object3D.DefaultUp.set(0.0, 0.0, 1.0); // z axis    
     // Create a camera with appropriate aspect ratio and size
     container = document.querySelector('.topology-part');   
@@ -126,9 +125,8 @@ function init() {
     orthoCamera = new THREE.OrthographicCamera( - 1, width / height , 1, - 1, 1, 2 );
     orthoCamera.position.set( 0.75, 0, 1 );
     CAM_DISTANCE = 10;
-   //const area = Math.sqrt(Math.pow(len, 2) + Math.pow(wid, 2));
-   //camera.position.z = 30 + dx/area;  // for camera setting according to DX, LEN and WID 
-    camera.position.z = 30;
+    const area = (dx*30)*(dx*30);
+    camera.position.z = 30 + dx/area;
     renderer = new THREE.WebGLRenderer({ alpha: true }); 
     renderer2 = new THREE.WebGLRenderer({ alpha: true }); 
     renderer.setClearColor( 0x000000, 0 ); // background color
@@ -198,8 +196,6 @@ function init() {
     createLabel('Y', new THREE.Color(0, 1, 0), new THREE.Vector3(0, lngth + 1, 0)); // Y text
     createLabel('Z', new THREE.Color(0, 0, 1), new THREE.Vector3(0, 0, lngth + 1)); // Z text
     
-   // axesHelper = new THREE.AxesHelper( 5 );
-   // scene2.add( axesHelper );
     currentAxis = 'none';
     radius = dx / 2; // Radius of spheres
     widthSegments = 32; // Surface parts of the sphere
@@ -249,6 +245,9 @@ function init() {
         lines = data.split('\n');
         console.log("lines size: "+ lines.length );
            
+        // Extract the step number from the file name and assign it to the global variable
+        currentStepNumber = extractStepNumber(name);
+        console.log("Step Number:", currentStepNumber);   
         animate();        
     });
 }
@@ -269,8 +268,18 @@ function animate() {
     render();
 }
 
+function extractStepNumber(filename) {
+    // Extract the step number from the file name (example: solid1.msh -> 1)
+    const match = filename.match(/solid(\d+)\.msh/);
+    return match ? parseInt(match[1], 10) : 0;
+}
 
 function createSphere() {
+
+    if (stepTextSprite) {
+        uiScene.remove(stepTextSprite);
+    }
+
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
     const defaultMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
     lut = new Lut();    
@@ -466,6 +475,54 @@ function createSphere() {
             fixedObjectGroup.add(sphere);           
         }
     });   
+
+        // Create a canvas and add the text
+        const canvas = document.createElement('canvas');
+        const canvasWidth = container.clientWidth; // The width of the container
+        const canvasHeight = 100; // Fixed height
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        
+        const context = canvas.getContext('2d');
+        context.fillStyle = 'rgba(255, 255, 255, 0)'; // Transparent background
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        
+        context.font = '75px Arial';
+        context.fillStyle = 'black';
+        context.textAlign = 'center'; // Center horizontally
+        context.textBaseline = 'middle'; // Center vertically
+        context.fillText(`Step ${currentStepNumber}`, canvas.width / 2, canvas.height / 2);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        
+        // Clear the old sprite
+        if (stepTextSprite) {
+            uiScene.remove(stepTextSprite);
+        }
+        
+        // Create a new sprite
+        stepTextSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            opacity: 1.0
+        }));
+        
+        // Scaling and position of the sprite
+        const orthoWidth = orthoCamera.right - orthoCamera.left;
+        const orthoHeight = orthoCamera.top - orthoCamera.bottom;
+        
+        const scaleFactor = 0.3; // Width ratio
+        const heightScaleFactor = 0.1; // Height ratio
+        stepTextSprite.scale.set(orthoWidth * scaleFactor, orthoHeight * heightScaleFactor, 1);
+        
+        const xCenter = (orthoCamera.left + orthoCamera.right) ; // Center on the X-axis
+        const yBottom = orthoCamera.bottom + (orthoHeight * 0.15); // Close to the bottom edge on the Y-axis
+        
+        stepTextSprite.position.set(xCenter, yBottom, 0);
+        
+        uiScene.add(stepTextSprite);
+        
     // clean up
     geometry.dispose();
     defaultMaterial.dispose();

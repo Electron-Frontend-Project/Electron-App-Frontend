@@ -55,8 +55,7 @@ function createMainWindow() {
 
                         if (files && files.length > 0) {
                             selectedFilePath = files[0]; // Store the selected file path
-                            console.log('Selected file:', selectedFilePath);
-                        
+                            console.log('Selected file:', selectedFilePath);                        
                             // Send the file path and flag to all renderer processes
                             mainWindow.webContents.send('file-selected', {
                                 filePath: selectedFilePath,
@@ -87,8 +86,7 @@ function createMainWindow() {
     ];
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
-
-   // When a file request is received from the renderer, send the file path
+    // When a file request is received from the renderer, send the file path
     ipcMain.on('request-file-path', (event) => {
         console.log("Request edildi burada");
         if (selectedFilePath) {
@@ -337,8 +335,7 @@ function createMainWindow() {
             startServer(); // Start the initial server instance
         }       
     });
-
-   
+  
    // Listen for the 'send-readFile' event from the renderer process
     ipcMain.on('send-readFile', async (event, data) => {
         const { rmin, volfrac, readFlag, readFilePath } = data;
@@ -347,8 +344,6 @@ function createMainWindow() {
         console.log("readFlag:", readFlag);
         console.log("readFilePath:", readFilePath);
         console.log("rmin sended: ", rmin);
-
-      //  const responseData = data;    
         
         const responseData = { 
             rmin: rmin, 
@@ -375,17 +370,16 @@ function createMainWindow() {
 
     app.whenReady().then(() => {  //when the app is ready, creates the main function
         createMainWindow();
-
    
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createMainWindow();
-        }
-    });    
-});
+        app.on('activate', () => {
+            if (BrowserWindow.getAllWindows().length === 0) {
+                createMainWindow();
+            }
+        });    
+    });
 
-app.on('window-all-closed', () => {     // makes it cross platform so that it works on all OS.
-    if (!isMac) {
-        app.quit()
+    app.on('window-all-closed', () => {     // makes it cross platform so that it works on all OS.
+        if (!isMac) {
+            app.quit()
     }
 });

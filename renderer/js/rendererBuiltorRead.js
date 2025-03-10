@@ -8,8 +8,7 @@ let readFlag = false;
 ipcRenderer.on('file-selected', (event, data) => {
     if (data.filePath) {
         readFilePath = data.filePath;
-        console.log("Dosya seçildi:", readFilePath);
-
+        console.log("File selected:", readFilePath);
         // Get the rmin and volfrac values from the inputs
         rmin = parseFloat(document.getElementById('rminInput').value);
         volfrac = parseFloat(document.getElementById('volFracInput').value);
@@ -18,7 +17,7 @@ ipcRenderer.on('file-selected', (event, data) => {
         ipcRenderer.send('send-readFile', { rmin, volfrac, readFlag, readFilePath });
         console.log("File path: ", readFilePath, " Flag: ", readFlag, " rmin: ", rmin, " volfrac: ", volfrac);
     } else {
-        console.log("Dosya seçimi iptal edildi veya kaldırıldı.");
+        console.log("File selection was cancelled or removed.");
         readFilePath = '';
         readFlag = false;
         console.log("File path: ", readFilePath, " Flag: ", readFlag);
