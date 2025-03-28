@@ -589,8 +589,8 @@ function initScene(lines) {
     );
     
     // Submit Buttons
-    document.getElementById('bcSubmit').addEventListener('click', () => bcManager.sendSelectedMeshesToHTML());
-    document.getElementById('bcSubmit').addEventListener('click', () => forceManager.sendSelectedMeshesToHTML());
+    document.getElementById('SubmitBC').addEventListener('click', () => bcManager.sendSelectedMeshesToHTML());
+    document.getElementById('SubmitForce').addEventListener('click', () => forceManager.sendSelectedMeshesToHTML());
     document.getElementById('bcSubmit').addEventListener('click', () => passiveManager.sendSelectedMeshesToHTML());
 
     geometry.dispose();

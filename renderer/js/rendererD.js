@@ -282,7 +282,7 @@ function initScene(lines) {
         }        
     });
     
-    // Pick/Add area for Force, BC and Passive
+    // Add area for Force, BC and Passive
     class SelectionManager {
         constructor(camera, scene, renderer, buttonId, clearAreaButtonId, clearAllButtonId, listId, clearListId, defaultColor, selectedColor) {
             this.camera = camera;
@@ -508,8 +508,8 @@ function initScene(lines) {
     );
     
     // Submit Buttons
-    document.getElementById('bcSubmit').addEventListener('click', () => bcManager.sendSelectedMeshesToHTML());
-    document.getElementById('bcSubmit').addEventListener('click', () => forceManager.sendSelectedMeshesToHTML());
+    document.getElementById('SubmitBC').addEventListener('click', () => bcManager.sendSelectedMeshesToHTML());
+    document.getElementById('SubmitForce').addEventListener('click', () => forceManager.sendSelectedMeshesToHTML());
     document.getElementById('bcSubmit').addEventListener('click', () => passiveManager.sendSelectedMeshesToHTML());
 
     geometry.dispose();
