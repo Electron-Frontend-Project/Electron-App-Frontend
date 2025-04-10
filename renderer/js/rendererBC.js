@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 removeButton.addEventListener("click", (event) => {
                     event.preventDefault();
                     data.splice(data.indexOf(elem), 1); // remove id from the list
+                    console.log(`[PASSIVE] Removed ID:`, elem, 'Type:', typeof elem); 
                     updateList(listContainerId, data, type); // update the list
                     ipcRenderer.send('removed-sphere', elem); // send removed id
                     
@@ -114,18 +115,25 @@ document.addEventListener('DOMContentLoaded', () => {
             Object.keys(data).forEach(key => {
                 const listItem = document.createElement("li");
                 listItem.textContent = `${key}: ${JSON.stringify(data[key])}`;
+            
                 const removeButton = document.createElement("button");
                 removeButton.textContent = "Remove";
                 removeButton.addEventListener("click", (event) => {
                     event.preventDefault();
-                    delete data[key]; // remove id from the dictionary
-                    updateList(listContainerId, data, type); // update the list
-                    ipcRenderer.send('removed-sphere', key); // send removed id
-                    
+            
+                    const actualID = key; // artık key = id
+            
+                    delete data[key];
+                    console.log(`[${type.toUpperCase()}] Removed ID:`, actualID, 'Type:', typeof actualID);
+            
+                    updateList(listContainerId, data, type);
+                    ipcRenderer.send('removed-sphere', actualID);
                 });
+            
                 listItem.appendChild(removeButton);
                 listContainer.appendChild(listItem);
             });
+            
         }
     }
          
@@ -237,7 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
             // Update the list of selected IDs and assign force components
             selectedForceIDs = await handleSendButtonClick('forcelist', 'list-container1', selectedForceIDs, 'force', forceLast);
-
    
             console.log("Updated selectedForceIDs:", selectedForceIDs);
          //   updateList('list-container1', selectedForceIDs, 'force');
@@ -281,14 +288,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
         // Store the current state of the lists before submitting
         const currentForceList = JSON.parse(JSON.stringify(forceDict));
-const currentBCList = JSON.parse(JSON.stringify(bcDict));
-const currentPassiveList = [...passListsend];
-
+        const currentBCList = JSON.parse(JSON.stringify(bcDict));
+        const currentPassiveList = [...passListsend];
     
         // Perform the submit logic
-      //  await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100));
         const newPassiveIDs = await handleSendButtonClick('passivelist', 'list-container3', selectedPassIDs, 'passive');
-selectedPassIDs = [...selectedPassIDs, ...newPassiveIDs];
+     //   selectedPassIDs = [...selectedPassIDs, ...newPassiveIDs];
+     selectedPassIDs = await handleSendButtonClick('passivelist', 'list-container3', selectedPassIDs, 'passive');
     
         // Update the UI with the preserved state
         setTimeout(() => {
@@ -328,7 +335,6 @@ selectedPassIDs = [...selectedPassIDs, ...newPassiveIDs];
         };
     
         ipcRenderer.send('send-BCparams', dataToSend);
-        console.log("HELLOOOOOOO");
     
         // **Toplam eleman sayısını ekrana yazdır**
         document.getElementById('list-container1').innerHTML += `<p>There are ${Object.keys(mergedForce).length} selected particles.</p>`;
@@ -342,16 +348,24 @@ selectedPassIDs = [...selectedPassIDs, ...newPassiveIDs];
         const designvar = document.getElementById(designVarId).innerHTML;
         const dArray = designvar.split(" ");
         const dValue = dArray[2];
-        if (dValue != null && !list.includes(dValue)) {
-            list.push(dValue);
-            updateList(listContainerId, list, type); // Update the displayed list
-
-            // Send the ID of the selected sphere to rendererD.js
-            const selectedMeshID = document.getElementById(designVarId).textContent.split(": ")[1];
-            console.log("Selected Mesh ID:", selectedMeshID); // Debug log
-            ipcRenderer.send('selected-sphere', selectedMeshID);
+    
+        if (dValue != null) {
+            if (type === 'passive') {
+                if (!list.includes(dValue)) {
+                    list.push(dValue);
+                    updateList(listContainerId, list, type);
+                    ipcRenderer.send('selected-sphere', dValue);
+                }
+            } else {
+                if (!Object.keys(list).includes(dValue)) {
+                    list[dValue] = { id: dValue }; //  ID'yi key olarak koy, value içine de ID koy
+                    updateList(listContainerId, list, type);
+                    ipcRenderer.send('selected-sphere', dValue);
+                }
+            }
         }
     }
+    
 
     // **to get points id for Force**
     const addButtonF = document.getElementById('forcepointadd');
@@ -372,7 +386,6 @@ selectedPassIDs = [...selectedPassIDs, ...newPassiveIDs];
     addButtonPassive.addEventListener('click', () => {
         addPoint('design-var1', passListsend, 'list-container3', 'passive');
     });
-
 
      // **to clear selected ids for force**
      const clearButtonSelectedF = document.getElementById('clearforce');
@@ -422,7 +435,6 @@ selectedPassIDs = [...selectedPassIDs, ...newPassiveIDs];
     }
 
 
-
     async function handleSendButtonClick(buttonId, listContainerId, selectedIDs, type, last) {
         return new Promise((resolve) => {
             const listElementHTML = document.getElementById(buttonId).innerHTML;
@@ -457,7 +469,6 @@ selectedPassIDs = [...selectedPassIDs, ...newPassiveIDs];
                     }
                 });
             } else if (type === 'bc') {
-                console.log("bc tıklandııııııııııııııı");
                 updatedIDs = { ...selectedIDs }; // Mevcut ID'leri kopyala
                 let xCom = false;
                 let yCom = false;
@@ -530,7 +541,6 @@ selectedPassIDs = [...selectedPassIDs, ...newPassiveIDs];
             if (type === 'force') {
                 forceComponents(newIDs, last); // Sadece type 'force' ise forceComponents'i çağır
             } else if (type === 'bc') {
-                console.log("bc 222222222222222222");
                 bcComponents(newIDs, last); // Sadece type 'bc' ise bcComponents'i çağır
             }
     
@@ -539,11 +549,4 @@ selectedPassIDs = [...selectedPassIDs, ...newPassiveIDs];
             resolve(updatedIDs);
         });
     }
-    
-
-
-
-
-
-
 });

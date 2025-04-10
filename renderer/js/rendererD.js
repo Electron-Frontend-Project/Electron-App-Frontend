@@ -488,17 +488,17 @@ function initScene(lines) {
         }
     }
     
-    // ** Create Managers for BC, Force, and Passive **
-    const bcManager = new SelectionManager(
-        camera, scene, renderer,
-        'bcareaadd', 'clearselectedbc', 'clearbc',
-        'bclist', 'bcclearlist', 0x00ff00, 'red'
-    );
-    
+    // ** Create Managers for Force, BC and Passive **
     const forceManager = new SelectionManager(
         camera, scene, renderer,
         'forceareaadd', 'clearselectedforce', 'clearforce',
         'forcelist', 'forceclearlist', 0x00ff00, 'blue'
+    );
+
+    const bcManager = new SelectionManager(
+        camera, scene, renderer,
+        'bcareaadd', 'clearselectedbc', 'clearbc',
+        'bclist', 'bcclearlist', 0x00ff00, 'red'
     );
     
     const passiveManager = new SelectionManager(

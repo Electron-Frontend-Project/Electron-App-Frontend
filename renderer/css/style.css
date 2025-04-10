@@ -636,7 +636,7 @@ dialog {
   padding: 2% 4%;
   color: #ffffff;
   margin: 0 2%;
-  background: linear-gradient(145deg, #FFC080, #FF9900); /* Gradyan buton */
+  background: #FF9900;
   font-size: 1.2em;
   text-align: center;
   font-style: normal;
@@ -648,6 +648,22 @@ dialog {
 
 #force-bc button[type="button"]:hover {
   background: linear -gradient(145deg, #FF9900, #FFC080); /* Hover efekti */
+}
+
+#force-bc #SubmitForce, #force-bc #SubmitBC {
+  position: relative;
+  display: inline-block;
+  padding: 2% 4%;
+  color: #ffffff;
+  margin: 0 2%;
+  background: linear-gradient(145deg, #FFC080, #FF9900); /* Gradyan buton */
+  font-size: 1.2em;
+  text-align: center;
+  font-style: normal;
+  border: none; /* Kenarlık kaldırıldı */
+  border-radius: 0.5em;
+  margin-bottom: 2%;
+  transition: background 0.3s ease; /* Geçiş efekti */
 }
 
 /* Özel Butonlar (Submit ve Close) */
